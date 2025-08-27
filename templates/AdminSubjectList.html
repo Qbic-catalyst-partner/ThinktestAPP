@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Subject List</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+</head>
+
+<body class="font-[Inter] bg-gray-50">
+    <div class="flex flex-row h-screen w-full">
+        {% include 'AdminSideNavBar.html' %}
+
+        <section id="main-content" class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out mt-16">
+            <div class="flex flex-col justify-around">
+                <div class="w-full container py-2 bg-gradient-to-r from-cyan-500">
+                    <p class="ml-16 text-white font-medium text-lg">List of Subjects</p>
+                </div>
+
+                <div class="flex justify-end mt-8 gap-2">
+                    <button onclick="openImportModal()" class="w-32 cursor-pointer hover:opacity-80">
+                        <img src="{{ url_for('static', filename='images/import.svg') }}" alt="Import"
+                            class="w-full h-auto">
+                    </button>
+                    <a id="exportLink" href="{{ url_for('exportSubjects') }}">
+                        <img src="{{ url_for('static', filename='images/export.svg') }}" alt="Export"
+                            class="w-32 cursor-pointer" />
+                    </a>
+                    <button onclick="openAddModal()" class="bg-gray-400 text-white px-4 py-2 rounded">Add
+                        Subject</button>
+                </div>
+
+                <form method="get" id="filterForm" class="flex flex-wrap gap-4 justify-start mt-8">
+                    <select name="subject" class="px-3 py-2 border border-gray-300 rounded-md w-[15.33%] h-12 text-sm">
+                        <option value="">Subject</option>
+                        {% for subject in all_subjects %}
+                        <option value="{{ subject }}" {% if current_filters.subject==subject %}selected{% endif %}>{{
+                            subject }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+
+                <div class="mt-8" id="subject-table-wrapper">
+                    {% include 'AdminSubjectPartial.html' %}
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+        <div class="bg-white p-8 rounded-md shadow-md w-[500px]">
+            <h2 class="text-xl font-semibold mb-4 text-center">Add Subject</h2>
+            <input type="text" id="addSubjectName" placeholder="Subject Name" class="w-full mb-4 p-2 border rounded">
+
+            <div class="flex gap-2 mb-2">
+                <select id="addModuleDropdown" class="flex-1 p-2 border rounded">
+                    <option value="">Select Module</option>
+                    {% for module in all_modules %}
+                    <option value="{{ module.module_id }}">{{ module.module_name }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="addModuleAddModal()" class="px-4 bg-cyan-500 text-white rounded">Add</button>
+            </div>
+            <div id="addModuleChips" class="flex flex-wrap gap-2 mb-4"></div>
+
+            <div class="flex justify-end gap-4">
+                <button onclick="closeAddModal()"
+                    class="px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                <button onclick="submitAddSubject()" class="px-4 py-2 bg-cyan-500 text-white rounded">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Subject Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+        <div class="bg-white p-8 rounded-md shadow-md w-[500px]">
+            <h2 class="text-xl font-semibold mb-4 text-center">Edit Subject</h2>
+            <input type="hidden" id="editSubjectId">
+            <input type="text" id="editSubjectName" placeholder="Subject Name" class="w-full mb-4 p-2 border rounded">
+
+            <div class="flex gap-2 mb-2">
+                <select id="editModuleDropdown" class="flex-1 p-2 border rounded">
+                    <option value="">Select Module</option>
+                    {% for module in all_modules %}
+                    <option value="{{ module.module_id }}">{{ module.module_name }}</option>
+                    {% endfor %}
+                </select>
+                <button onclick="addModuleEditModal()" class="px-4 bg-cyan-500 text-white rounded">Add</button>
+            </div>
+            <div id="editModuleChips" class="flex flex-wrap gap-2 mb-4"></div>
+
+            <div class="flex justify-end gap-4">
+                <button onclick="closeEditModal()"
+                    class="px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                <button onclick="saveEditedSubject()" class="px-4 py-2 bg-cyan-500 text-white rounded">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+        <div class="bg-white p-8 rounded-md shadow-md w-96">
+            <h2 class="text-xl font-semibold mb-4 text-center">Import Subjects</h2>
+            <input type="file" id="importFile" accept=".xlsx" class="block w-full mb-4 p-2 border rounded">
+            <div class="flex justify-end gap-4">
+                <button onclick="closeImportModal()"
+                    class="px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                <button onclick="uploadImportFile()" class="px-4 py-2 bg-cyan-500 text-white rounded">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Reload table when filter dropdown changes
+        document.getElementById('filterForm').addEventListener('change', function () {
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData).toString();
+
+            fetch(`/AdminSubjectPartial?${params}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('subject-table-wrapper').innerHTML = html;
+                });
+        });
+
+        let addModalSelectedModules = [];
+        let editModalSelectedModules = [];
+
+        function openAddModal() {
+            addModalSelectedModules = [];
+            document.getElementById('addSubjectName').value = '';
+            renderAddModalModuleChips();
+            document.getElementById('addModal').classList.remove('hidden');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.add('hidden');
+        }
+
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        function openEditModal(subjectId) {
+            fetch(`/getSubject/${subjectId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return alert(data.message);
+
+                    document.getElementById('editSubjectId').value = data.subject.subject_id;
+                    document.getElementById('editSubjectName').value = data.subject.subject_name;
+                    editModalSelectedModules = data.subject.modules;
+                    renderEditModalModuleChips();
+                    document.getElementById('editModal').classList.remove('hidden');
+                });
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function addModuleAddModal() {
+            const select = document.getElementById('addModuleDropdown');
+            const moduleId = select.value;
+            const moduleName = select.options[select.selectedIndex].text;
+            if (!moduleId || addModalSelectedModules.some(m => m.module_id == moduleId)) return;
+            addModalSelectedModules.push({ module_id: moduleId, module_name: moduleName });
+            renderAddModalModuleChips();
+            select.value = '';
+        }
+
+        function addModuleEditModal() {
+            const select = document.getElementById('editModuleDropdown');
+            const moduleId = select.value;
+            const moduleName = select.options[select.selectedIndex].text;
+            if (!moduleId || editModalSelectedModules.some(m => m.module_id == moduleId)) return;
+            editModalSelectedModules.push({ module_id: moduleId, module_name: moduleName });
+            renderEditModalModuleChips();
+            select.value = '';
+        }
+
+        function renderAddModalModuleChips() {
+            const container = document.getElementById('addModuleChips');
+            container.innerHTML = '';
+            addModalSelectedModules.forEach(m => {
+                const chip = `<div class='flex items-center gap-2 px-3 py-1 bg-gray-200 rounded-full'>${m.module_name} <button onclick="removeModuleAddModal('${m.module_id}')" class='text-red-500 font-bold'>&times;</button></div>`;
+                container.innerHTML += chip;
+            });
+        }
+
+        function renderEditModalModuleChips() {
+            const container = document.getElementById('editModuleChips');
+            container.innerHTML = '';
+            editModalSelectedModules.forEach(m => {
+                const chip = `<div class='flex items-center gap-2 px-3 py-1 bg-gray-200 rounded-full'>${m.module_name} <button onclick="removeModuleEditModal('${m.module_id}')" class='text-red-500 font-bold'>&times;</button></div>`;
+                container.innerHTML += chip;
+            });
+        }
+
+        function removeModuleAddModal(moduleId) {
+            addModalSelectedModules = addModalSelectedModules.filter(m => m.module_id != moduleId);
+            renderAddModalModuleChips();
+        }
+
+        function removeModuleEditModal(moduleId) {
+            editModalSelectedModules = editModalSelectedModules.filter(m => m.module_id != moduleId);
+            renderEditModalModuleChips();
+        }
+
+        function submitAddSubject() {
+            const subjectName = document.getElementById('addSubjectName').value.trim();
+            const moduleIds = addModalSelectedModules.map(m => m.module_id);
+            if (!subjectName || !moduleIds.length) return alert('Enter subject and modules');
+            fetch('/addSubject', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subject_name: subjectName, module_ids: moduleIds }) })
+                .then(res => res.json())
+                .then(data => { if (data.success) { closeAddModal(); reloadSubjectTable(); alert('Added'); } else alert(data.message); });
+        }
+
+        function saveEditedSubject() {
+            const subjectId = document.getElementById('editSubjectId').value;
+            const subjectName = document.getElementById('editSubjectName').value.trim();
+            const moduleIds = editModalSelectedModules.map(m => m.module_id);
+            if (!subjectName || !moduleIds.length) return alert('Enter subject and modules');
+            fetch('/updateSubject', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subject_id: subjectId, subject_name: subjectName, module_ids: moduleIds }) })
+                .then(res => res.json())
+                .then(data => { if (data.success) { closeEditModal(); reloadSubjectTable(); alert('Updated'); } else alert(data.message); });
+        }
+
+        function reloadSubjectTable() {
+            const form = document.getElementById('filterForm');
+            const params = new URLSearchParams(new FormData(form)).toString();
+            fetch(`/AdminSubjectPartial?${params}`)
+                .then(res => res.text())
+                .then(html => { document.getElementById('subject-table-wrapper').innerHTML = html; });
+        }
+
+        function uploadImportFile() {
+            const fileInput = document.getElementById('importFile');
+            if (!fileInput.files.length) return alert('Select file');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            fetch('/importSubjects', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => { if (data.success) { closeImportModal(); reloadSubjectTable(); alert('Imported'); } else alert(data.message); });
+        }
+
+        function deleteSubject(id) {
+            if (!confirm('Are you sure you want to delete?')) return;
+            fetch('/deleteSubject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subject_id: id })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        reloadSubjectTable(); // Call your subject table reload function
+                    } else {
+                        alert(data.message);
+                    }
+                });
+        }
+
+    </script>
+
+</body>
+
+</html>

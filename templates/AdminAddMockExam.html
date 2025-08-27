@@ -1,0 +1,193 @@
+<!-- AdminAddMockExam.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Mock Exam</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<style>
+    .correct-checkbox:checked {
+        background-color: #16a34a;
+        /* Tailwind Green-600 */
+        border-color: #16a34a;
+    }
+
+    .correct-checkbox:checked+.correct-label {
+        color: #16a34a;
+        /* Tailwind Green-600 */
+        font-weight: 600;
+    }
+body,
+    .font-sans {
+        font-family: 'Inter', sans-serif !important;
+    }
+</style>
+
+<body class="font-[Inter] bg-gray-50">
+    <div class="flex flex-row h-screen w-full" style="background-color: #f0f4f9;">
+        {% include 'AdminSideNavBar.html' %}
+
+        <section id="main-content"
+            class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out block text-sm font-medium text-gray-500 mb-1 body-font mt-16">
+            <div class="flex flex-col justify-around">
+                <div class="w-full container py-2 bg-gradient-to-r from-cyan-500">
+                    <p class="ml-16 text-white font-medium text-lg">Add Mock Exam</p>
+                </div>
+                <form id="mockExamForm" class="pt-4">
+                    <div class="mb-4">
+                        <label class="block mb-1">Exam Name</label>
+                        <input type="text" id="name" required class="shadow border-0 w-full h-10 rounded-md text-sm" />
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Duration (minutes)</label>
+                        <input type="number" id="duration" required class="shadow border-0 w-full h-10 rounded-md text-sm" />
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">Difficulty</label>
+                        <select id="difficulty" class="shadow border-0 w-full h-10 rounded-md text-sm p-2">
+                            <option value="1">Easy</option>
+                            <option value="2">Medium</option>
+                            <option value="3">Difficult</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block mb-1">General Instructions</label>
+                        <textarea id="instructions" class="shadow border-0 w-full h-10 rounded-md text-sm"></textarea>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block font-semibold my-6">Configure Questions Per Subject & Difficulty</label>
+                        <div class="mb-6">
+                            <label class="block font-medium mb-2">Add Subject Configuration</label>
+                            <div class="flex items-center mb-4">
+                                <select id="subjectSelect" class="shadow border-0 w-full h-10 rounded-md text-sm p-2">
+                                    <option value="">-- Select Subject --</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.subject_id }}" data-name="{{ subject.subject_name }}">{{
+                                        subject.subject_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" onclick="addSubjectConfig()"
+                                    class="ml-2 px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Add</button>
+                            </div>
+
+                            <div id="subjectConfigs" class="space-y-4"></div>
+                        </div>
+                        <div class="col-span-2 mt-8 flex justify-center gap-4">
+                            <button onclick="window.history.back()" type="button"
+                                class="w-32 px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                            <button type="submit" class="w-32 px-4 py-2 bg-cyan-500 text-white rounded">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+        <div class="bg-white p-6 rounded-md shadow-md w-96">
+            <h2 class="text-xl font-semibold mb-4">Import Mock Exam</h2>
+            <input type="file" id="importFile" accept=".xlsx" class="block mb-4">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
+                <button onclick="uploadImportFile()" class="px-4 py-2 bg-cyan-500 text-white rounded">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function addSubjectConfig() {
+            const select = document.getElementById('subjectSelect');
+            const subjectId = select.value;
+            const subjectName = select.options[select.selectedIndex].getAttribute('data-name');
+            if (!subjectId || document.querySelector(`[data-subject-id='${subjectId}']`)) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'subject-config border rounded p-4 bg-gray-50';
+            wrapper.setAttribute('data-subject-id', subjectId);
+
+            wrapper.innerHTML = `
+        <div class="flex justify-between mb-2">
+          <label class="font-semibold">${subjectName}</label>
+          <button type="button" onclick="removeSubjectConfig(${subjectId})" class="text-red-600">Remove</button>
+        </div>
+        <div class="grid grid-cols-5 gap-2">
+          ${[1, 2, 3, 4, 5].map(level => `
+            <div>
+              <label class="block text-sm">Level ${level}</label>
+              <input type="number" min="0" value="0"
+                     class="w-full border rounded px-2 py-1"
+                     data-subject-id="${subjectId}" data-level="${level}" />
+            </div>`).join('')}
+        </div>
+      `;
+
+            document.getElementById('subjectConfigs').appendChild(wrapper);
+        }
+
+        function removeSubjectConfig(id) {
+            const config = document.querySelector(`.subject-config[data-subject-id='${id}']`);
+            if (config) config.remove();
+        }
+
+        document.getElementById('mockExamForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const config = {};
+            document.querySelectorAll('input[data-subject-id][data-level]').forEach(input => {
+                const sid = input.dataset.subjectId;
+                const level = input.dataset.level;
+                if (!config[sid]) config[sid] = {};
+                config[sid][level] = parseInt(input.value || '0');
+            });
+
+            const formData = new FormData();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('duration', document.getElementById('duration').value);
+            formData.append('difficulty', document.getElementById('difficulty').value);
+            formData.append('instructions', document.getElementById('instructions').value);
+            formData.append('config', JSON.stringify(config));
+
+            fetch('{{ url_for("adminAddMockExam") }}', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        alert('Mock Exam added successfully.');
+                        window.location.href = '/AdminMockExamList';
+                    } else {
+                        alert(res.message || 'Failed to save.');
+                    }
+                });
+        });
+
+    </script>
+
+</body>
+
+</html>

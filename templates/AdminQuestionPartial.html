@@ -1,0 +1,87 @@
+<table class="min-w-full bg-white border border-gray-200">
+  <thead>
+    <tr>
+      <th class="p-4 text-center text-gray-500">Question ID</th>
+      <th class="p-4 text-center text-gray-500">Question Name</th>
+      <th class="p-4 text-center text-gray-500">Subject</th>
+      <th class="p-4 text-center text-gray-500">Module</th>
+      <th class="p-4 text-center text-gray-500">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody id="question-table-body">
+    {% for question in questions %}
+    <tr class="border-t">
+      <td class="p-4 text-center text-sm">{{ question.q_id }}</td>
+      <td class="p-4 text-center text-sm">{{ question.question_description }}</td>
+      <td class="p-4 text-center text-sm">{{ question.subject_name }}</td>
+      <td class="p-4 text-center text-sm">{{ question.module_name }}</td>
+      <td class="p-4 flex items-center justify-center gap-2">
+        <a href="{{ url_for('adminEditQuestion', q_id=question.q_id) }}" class="text-gray-400 hover:text-blue-700">
+          <i class="fas fa-edit"></i>
+        </a>
+        <button class="text-gray-400 hover:text-red-700" onclick="deleteQuestion({{ question.q_id }})">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Pagination Buttons -->
+<div class="flex flex-col md:flex-row justify-between p-4 gap-2 bg-white border border-gray-200 mt-2">
+
+  {% if questions|length > 0 %}
+  <p class="text-sm text-gray-500 mt-2">
+    Showing data {{ (page - 1) * 50 + 1 }} to {{ (page - 1) * 50 + questions|length }} of total entries
+  </p>
+  {% else %}
+  <p class="text-sm text-gray-500 mt-2">0 of 0 entries</p>
+  {% endif %}
+
+  <div class="flex flex-row gap-2">
+
+    <button onclick="fetchPage({{ prev_num }})"
+      class="px-3 py-1 bg-gray-200 text-gray-900 border rounded-md {{ 'opacity-50 cursor-not-allowed' if not has_prev else '' }}"
+      {% if not has_prev %}disabled{% endif %}>&lt;</button>
+
+    <!-- Left ellipsis + page 1 (only if window doesn't start at 1) -->
+    {% if block_start > 1 %}
+    <button onclick="fetchPage(1)" class="px-2 py-1 text-xs sm:text-sm border rounded-md">1</button>
+    <span class="px-1 text-gray-400 select-none">…</span>
+    {% endif %}
+
+    {% for p in range(block_start, block_end + 1) %}
+    <button onclick="fetchPage({{ p }})"
+      class="px-3 py-1 border rounded-md {% if p == page %}bg-cyan-500 text-white{% endif %}">{{ p }}</button>
+    {% endfor %}
+
+    <!-- Right ellipsis + last page (only if window doesn't end at last) -->
+    {% if block_end < total_pages %} <span class="px-1 text-gray-400 select-none">…</span>
+      <button onclick="fetchPage({{ total_pages }})"
+        class="px-2 py-1 text-xs sm:text-sm border rounded-md">{{total_pages }}</button>
+      {% endif %}
+
+      <button onclick="fetchPage({{ next_num }})"
+        class="px-3 py-1 bg-gray-200 text-gray-900 border rounded-md {{ 'opacity-50 cursor-not-allowed' if not has_next else '' }}"
+        {% if not has_next %}disabled{% endif %}>&gt;</button>
+  </div>
+</div>
+
+<!-- Pagination Fetch Script -->
+<script>
+  function fetchPage(pageNumber) {
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    formData.append('page', pageNumber);
+
+    const params = new URLSearchParams(formData).toString();
+
+    fetch(`/AdminQuestionPartial?${params}`)
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('question-table-wrapper').innerHTML = html;
+      });
+  }
+</script>

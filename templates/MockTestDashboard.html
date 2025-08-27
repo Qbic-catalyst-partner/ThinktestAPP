@@ -1,0 +1,636 @@
+<!-- MockTestDashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MockTest Dashboard</title>
+  <!-- Tailwind CDN and font config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../static/css/index.css" />
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+  <!-- script -->
+  <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+  <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/script-name.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+<style>
+  [data-accordion-target][aria-expanded="true"] {
+    background-color: var(--links-color);
+    color: white;
+  }
+
+  body,
+  .font-sans {
+    font-family: 'Inter', sans-serif !important;
+  }
+</style>
+
+<body class="font-[Inter] bg-gray-50">
+
+  <div class="flex flex-row h-screen w-[100vw]">
+    <!-- Navbar section -->
+
+    {% include 'SideNavBar.html' %}
+
+    <!-- Main Content Section -->
+    <section id="main-content"
+      class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out text-gray-700 body-font mt-16">
+      <div class="flex flex-col">
+
+        <!-- Header Section -->
+        <div class="container py-2 bg-gradient-to-r from-cyan-500">
+          <p class="ml-16 text-white font-medium text-lg">Mock Tests</p>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="container pt-8 pb-2">
+          <div class="flex flex-wrap text-left justify-center md:justify-between">
+            <!-- Tile 1 -->
+            <div class="p-4 w-full md:w-1/4">
+              <div class="p-2 lg:p-0 flex items-center justify-around h-full rounded-lg bg-white"
+                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                <div>
+                  <h2 class="title-font font-semibold text-xl xl:text-2xl text-gray-600">{{mocks_completed}}</h2>
+                  <p class="font-medium pb-4" style="color: var(--links-color);">Tests Completed</p>
+                </div>
+                <div>
+                  <img class="w-[50px] h-[50px]"
+                    src="{{ url_for('static', filename='../static/images/DashTiles/TestsCompleted.svg') }}">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tile 2 -->
+            <div class="p-4 w-full md:w-1/4">
+              <div class="p-2 lg:p-0 flex items-center justify-around h-full rounded-lg bg-white"
+                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                <div>
+                  <h2 class="title-font font-semibold text-xl xl:text-2xl text-gray-600">{{exams_targeted}}</h2>
+                  <p class="font-medium pb-4" style="color: var(--links-color);">Exams Targeted</p>
+                </div>
+                <div>
+                  <img class="w-[50px] h-[50px]"
+                    src="{{ url_for('static', filename='../static/images/DashTiles/ExamsTargeted.svg') }}">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tile 3 -->
+            <div class="p-4 w-full md:w-1/4">
+              <div class="p-2 lg:p-0 flex items-center justify-around h-full rounded-lg bg-white"
+                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                <div>
+                  <h2 class="title-font font-semibold text-xl xl:text-2xl text-gray-600">{{average_score}}%</h2>
+                  <p class="font-medium pb-4" style="color: var(--links-color);">Average Score</p>
+                </div>
+                <div>
+                  <img class="w-[50px] h-[50px]"
+                    src="{{ url_for('static', filename='../static/images/DashTiles/AvgScore.svg') }}">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tile 4 -->
+            <div class="p-4 w-full md:w-1/4">
+              <div class="p-2 lg:p-0 flex items-center justify-around h-full rounded-lg bg-white"
+                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                <div>
+                  <h2 class="title-font font-semibold text-xl xl:text-2xl text-gray-600">{{average_accuracy}}%</h2>
+                  <p class="font-medium pb-4" style="color: var(--links-color);">Average Accuracy</p>
+                </div>
+                <div>
+                  <img class="w-[50px] h-[50px]"
+                    src="{{ url_for('static', filename='../static/images/DashTiles/AvgAccuracy.svg') }}">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="w-full container pt-8 p-4">
+          <div id="charts-container" class="flex flex-wrap justify-evenly gap-x-2 gap-y-8">
+            <!-- PIE CHART -->
+            <div class="bg-white rounded-lg shadow p-4 md:p-6 text-center min-w-[300px] flex-1">
+              <h5 class="mb-8 font-bold text-gray-600">Exams Attempted</h5>
+              <div id="pie-chart" class="chart-container"></div>
+            </div>
+            <!-- BAR CHART -->
+            <div class="bg-white rounded-lg shadow p-4 md:p-6 text-center min-w-[300px] flex-1">
+              <h5 class="mb-8 font-bold text-gray-600">Average Score by Subject</h5>
+              <div class="overflow-x-auto">
+                <div id="column-chart" class=""></div>
+              </div>
+            </div>
+            <!-- LINE CHART  -->
+            <div class="bg-white rounded-lg shadow p-4 md:p-6 text-center min-w-[300px] flex-1">
+              <h5 class="mb-8 font-bold text-gray-600">Average Score by Difficulty Level</h5>
+              <div id="line-chart" class="chart-container"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="container pt-8 p-4">
+          <h1 class="font-bold text-gray-600 mb-4">Filter By:</h1>
+          <form id="filter-form" action="/filter_mocktest" class="flex flex-wrap gap-4 items-start w-full sm:w-auto">
+
+            <div class="w-72 min-w-[200px]">
+              <label class="block text-sm text-gray-600 mb-1">Status</label>
+              <select name="status"
+                class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="all">All</option>
+                <option value="completed">Completed</option>
+                <option value="partially_completed">Partially Completed</option>
+              </select>
+            </div>
+
+            <div class="w-72 min-w-[200px]">
+              <label class="block text-sm text-gray-600 mb-1">Exam</label>
+              <select name="exam"
+                class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="all">All Exams</option>
+                {% for exam_id, exam_name in unique_exams.items() %}
+                <option value="{{ exam_id }}">{{ exam_name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="w-72 min-w-[200px]">
+              <label class="block text-sm text-gray-600 mb-1">From Date</label>
+              <input type="date" name="from_date"
+                class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" />
+            </div>
+
+            <div class="w-72 min-w-[200px]">
+              <label class="block text-sm text-gray-600 mb-1">To Date</label>
+              <input type="date" name="to_date"
+                class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" />
+            </div>
+
+            <div class="w-72 min-w-[200px]">
+              <label class="block text-sm text-gray-600 mb-1">Difficulty Level</label>
+              <select name="difficulty"
+                class="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500">
+                <option value="all">All</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Difficult">Difficult</option>
+              </select>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Accordion -->
+        <div id="accordion-container" class="container pt-8 p-4">
+          {% include 'MockTestAccordion.html' %}
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- TAKE MOCK TEST MODAL -->
+  <div id="test-selection-modal" tabindex="-1" aria-hidden="true"
+    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow">
+        <div class="p-4 md:p-5">
+          <form method="POST" class="space-y-4" action="/MockTestInstruction">
+            <div>
+              <label for="exam" class="block mb-2 text-sm font-semibold text-gray-600">Select Exam</label>
+              <select name="exam_name" id="exam"
+                class="bg-gray-50 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                required>
+                {% for name in exams %}
+                <option value="{{ name }}">{{ name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label for="difficulty" class="block mb-2 text-sm font-semibold text-gray-600">Difficulty Level</label>
+              <select name="difficulty" id="difficulty"
+                class="bg-gray-50 border border-gray-300 text-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                required>
+                {% for level in difficulty_levels %}
+                <option value="{{ level }}">{{ level }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="flex flex-wrap justify-around gap-4 pt-4">
+              <button type="button"
+                class="flex-1 text-cyan-500 border border-cyan-500 font-medium rounded-lg text-base md:text-lg px-4 py-2 md:px-5 md:py-2.5 text-center"
+                data-modal-hide="test-selection-modal">Cancel</button>
+              <button type="submit"
+                class="flex-1 text-white bg-blue-700 font-medium rounded-lg text-base md:text-lg px-4 py-2 md:px-5 md:py-2.5 text-center"
+                style="background-color: var(--links-color);">Take Test</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.js"></script>
+
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const logoutButton = document.querySelector('#logout-button');
+
+      if (logoutButton) {
+        logoutButton.addEventListener('click', function () {
+          fetch('/logout', { method: 'POST' })
+            .then(response => {
+              if (response.redirected) {
+                window.location.href = response.url;
+              }
+            })
+        });
+      }
+    });
+
+    const fetchPieChartData = async () => {
+      try {
+        const response = await fetch('/PieChartData');
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        // console.error("Error fetching exam data:", error);
+        return { labels: [], series: [] }; // Fallback for errors
+      }
+    };
+
+    const getPieChartOptions = async () => {
+      const pieChartData = await fetchPieChartData();
+      return {
+        series: pieChartData.series,
+
+        colors: ["#FB9251", "#0ABDDB", "#F2BC2A", "#AA47BC", "#00ACC1", "#E91E63", "#9C27B0", "#3F51B5", "#4CAF50", "#FF9800", "#795548", "#607D8B"],
+        chart: {
+          // height: "100%",
+          type: "pie",
+        },
+        stroke: {
+          colors: ["white"],
+          lineCap: "",
+        },
+        plotOptions: {
+          pie: {
+            labels: {
+              show: true,
+            },
+            dataLabels: {
+              offset: -25
+            }
+          },
+        },
+        labels: pieChartData.labels,
+        dataLabels: {
+          enabled: true,
+          style: {
+            fontFamily: "Inter, sans-serif",
+          },
+        },
+        legend: {
+          show: true,
+          position: "bottom",
+          fontFamily: "Inter, sans-serif"
+        },
+      }
+    }
+
+    if (document.getElementById("pie-chart") && typeof ApexCharts !== 'undefined') {
+      getPieChartOptions()
+        .then((options) => {
+          const chart = new ApexCharts(document.getElementById("pie-chart"), options);
+          chart.render();
+        })
+        .catch((error) => {
+          // console.error("Error initializing the pie chart:", error);
+        });
+    }
+
+    const fetchBarChartData = async () => {
+      try {
+        const response = await fetch('/BarChartData');
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        // console.error("Error fetching bar chart data:", error);
+        return { series: {} }; // Fallback for errors
+      }
+    };
+
+    const getBarChartOptions = async () => {
+      const barChartData = await fetchBarChartData();
+      // console.log("Bar Chart Data:", barChartData.series);
+      const numBars = barChartData.series[0].data.length;
+      const chartWidth = numBars * (30);
+      document.getElementById("column-chart").style.minWidth = `${chartWidth}px`;
+
+      return {
+        series: barChartData.series,
+        chart: {
+          type: "bar",
+          height: "300px",
+          fontFamily: "Inter, sans-serif",
+          toolbar: {
+            show: false,
+          },
+        },
+        legend: {
+          show: false
+        },
+        plotOptions: {
+          bar: {
+            borderRadius: 5,
+            borderRadiusApplication: "top",
+            horizontal: false,
+            columnWidth: "15px",
+          },
+        },
+        tooltip: {
+          shared: true,
+          intersect: false,
+          style: {
+            fontFamily: "Inter, sans-serif",
+          },
+        },
+        states: {
+          hover: {
+            filter: {
+              type: "darken",
+              value: 0.85,
+            },
+          },
+        },
+        stroke: {
+          show: true,
+          width: 1,
+          colors: ["transparent"],
+        },
+        grid: {
+          show: true,
+          strokeDashArray: 4,
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        xaxis: {
+          labels: {
+            show: true,
+            style: {
+              fontFamily: "Inter, sans-serif",
+              cssClass: "text-xs font-normal fill-gray-500 dark:fill-gray-400",
+            },
+          },
+          axisBorder: {
+            show: true, // Show x-axis border
+            color: "#E0E0E0",
+          },
+          axisTicks: {
+            show: true, // Show x-axis ticks
+            color: "#E0E0E0",
+          },
+        },
+        yaxis: {
+          show: true, // Show y-axis
+          labels: {
+            style: {
+              fontFamily: "Inter, sans-serif",
+            },
+            formatter: function (value) {
+              return value.toFixed(0); // Format to 2 decimal points
+            },
+          },
+          axisBorder: {
+            show: true, // Show y-axis border
+            color: "#E0E0E0",
+          },
+          axisTicks: {
+            show: true, // Show y-axis ticks
+            color: "#E0E0E0",
+          },
+        },
+        fill: {
+          type: "gradient", // Enable gradient fill
+          gradient: {
+            shade: "light",
+            type: "vertical",
+            shadeIntensity: 0.5,
+            gradientToColors: ["#D3D3D3"], // Gradient endpoint color
+            inverseColors: false,
+            stops: [0, 100], // Control gradient positions
+          },
+        },
+        colors: ["#00C6FB"]
+      };
+    };
+
+    if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
+      getBarChartOptions()
+        .then((options) => {
+          const chart = new ApexCharts(document.getElementById("column-chart"), options);
+          chart.render();
+        })
+        .catch((error) => {
+          // console.error("Error initializing the bar chart:", error);
+        });
+    }
+
+    const fetchLineChartData = async () => {
+      try {
+        const response = await fetch('/LineChartData');
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        // console.error("Error fetching line chart data:", error);
+        return { labels: [], series: [] }; // Fallback for errors
+      }
+    };
+
+    const getLineChartOptions = async () => {
+      const lineChartData = await fetchLineChartData();
+
+      return {
+        chart: {
+          type: "line",
+          height: "300px",
+          fontFamily: "Inter, sans-serif",
+          dropShadow: {
+            enabled: false,
+          },
+          toolbar: {
+            show: false,
+          },
+        },
+        tooltip: {
+          enabled: true,
+          x: {
+            show: false,
+          },
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        stroke: {
+          curve: "smooth",
+          width: 4, // Adjust line thickness
+        },
+        grid: {
+          show: true,
+          strokeDashArray: 4,
+        },
+        series: lineChartData.series,
+        legend: {
+          show: true,
+          position: "bottom", // Position legend above the chart
+          fontFamily: "Inter, sans-serif",
+        },
+        xaxis: {
+          categories: lineChartData.labels,
+          labels: {
+            show: true,
+            style: {
+              fontFamily: "Inter, sans-serif",
+              cssClass: "text-xs font-normal fill-gray-500 dark:fill-gray-400",
+            },
+          },
+          axisBorder: {
+            show: true, // Show x-axis border
+            color: "#E0E0E0",
+          },
+          axisTicks: {
+            show: true, // Show x-axis ticks
+            color: "#E0E0E0",
+          },
+        },
+        yaxis: {
+          show: true, // Show y-axis
+          labels: {
+            style: {
+              fontFamily: "Inter, sans-serif",
+            },
+            formatter: function (value) {
+              return value.toFixed(0); // Format to 2 decimal points
+            },
+          },
+          axisBorder: {
+            show: true, // Show y-axis border
+            color: "#E0E0E0",
+          },
+          axisTicks: {
+            show: true, // Show y-axis ticks
+            color: "#E0E0E0",
+          },
+        },
+      }
+    };
+
+    if (document.getElementById("line-chart") && typeof ApexCharts !== 'undefined') {
+      getLineChartOptions()
+        .then((options) => {
+          const chart = new ApexCharts(document.getElementById("line-chart"), options);
+          chart.render();
+        })
+        .catch((error) => {
+          // console.error("Error initializing the line chart:", error);
+        });
+    }
+
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+  <script>
+
+    function initializeAccordion() {
+      const accordions = document.querySelectorAll('[data-accordion="collapse"]');
+      accordions.forEach(accordion => {
+        const buttons = accordion.querySelectorAll('[data-accordion-target]');
+        buttons.forEach(button => {
+          button.addEventListener('click', function () {
+            const target = document.querySelector(this.getAttribute('data-accordion-target'));
+            if (target) {
+              target.classList.toggle('hidden');
+
+              const isExpanded = button.getAttribute('aria-expanded') === 'true';
+              button.setAttribute('aria-expanded', !isExpanded);
+            }
+          });
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      initializeAccordion();
+    });
+
+    const filterForm = document.getElementById('filter-form');
+    const accordionContainer = document.getElementById('accordion-container');
+
+    filterForm.addEventListener('change', () => {
+      const formData = new FormData(filterForm);
+      fetch('/filter_mocktest', {
+        method: 'POST',
+        body: formData,
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text(); // Expecting the server to return HTML content
+        })
+        .then(html => {
+          accordionContainer.innerHTML = html;
+          initializeAccordion();
+          bindViewReportButtons();
+        })
+    });
+  </script>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <script>
+    {% for category, message in messages %}
+    alert("{{ message | escape }}");
+    {% endfor %}
+  </script>
+  {% endif %}
+  {% endwith %}
+
+</body>
+
+</html>

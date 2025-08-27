@@ -1,0 +1,110 @@
+<!-- Sidebar Wrapper -->
+
+<div id="sidebar-wrapper" class="relative">
+    <!-- Toggle Button -->
+    <button id="toggleSidebar" class="absolute left-24 xl:left-32 top-4 z-20 p-2 bg-cyan-500 rounded-full">
+        <svg id="arrowIcon" class="w-5 h-5 text-white rotate-180 transition-transform" fill="none" stroke="currentColor"
+            stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <nav id="sidebar"
+        class="flex flex-col items-center w-24 xl:w-32 justify-between min-h-screen bg-white shadow-xl transition-all duration-300 ease-in-out overflow-x-hidden">
+        <nav class="flex flex-col gap-4 items-center">
+            <div class="flex flex-col items-center p-2">
+                <img src="../static/images/logo.svg" class="w-[80%] h-[80%] xl:w-[100%] h-[100%]" alt="Logo">
+            </div>
+            <a href="{{url_for('institutionDashboard')}}" class="hover:bg-gray-200 p-2 rounded mt-16" title="Dashboard">
+                <img src="{{ url_for('static', filename='../static/images/SideNavBar/Dashboard.svg') }}"
+                    class="w-6 h-6 xl:w-8 xl:h-8" alt="Dashboard">
+            </a>
+            <a href="/PerformanceAnalysis" class="hover:bg-gray-200 p-2 rounded" title="Performance Analysis">
+                <img src="{{ url_for('static', filename='../static/images/SideNavBar/MockTest.svg') }}"
+                    class="w-6 h-6 xl:w-8 xl:h-8" alt="Performance Analysis">
+            </a>
+            <a href="/ExamInfoInstitutionDashboard" class="hover:bg-gray-200 p-2 rounded" title="Exam Info">
+                <img src="{{ url_for('static', filename='../static/images/SideNavBar/ExamInfo.svg') }}" 
+                    class="w-6 h-6 xl:w-8 xl:h-8" alt="Exam Info">
+            </a>
+        </nav>
+        <div class="flex flex-col items-center">
+            <a href="/InstitutionProfile" id="profile-button" class="hover:bg-gray-200 p-2 rounded" title="Profile">
+                <img src="{{ url_for('static', filename='../static/images/staticprofile.png') }}" alt="Profile"
+                    class="w-6 h-6 xl:w-8 xl:h-8 rounded-full object-cover border border-gray-300">
+            </a>
+            <a href="/logout" id="logout-button" class="hover:bg-gray-200 p-2 rounded" title="Logout">
+                <img src="{{ url_for('static', filename='../static/images/SideNavBar/Logout.svg') }}" alt="Logout"
+                    class="w-6 h-6 xl:w-8 xl:h-8" alt="Logout">
+            </a>
+        </div>
+    </nav>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const sidebar = document.getElementById("sidebar");
+        const toggleButton = document.getElementById("toggleSidebar");
+        const arrowIcon = document.getElementById("arrowIcon");
+
+        let isCollapsed = false;
+
+        function updateSidebarClasses() {
+            const isXL = window.innerWidth >= 1280;
+
+            if (!isCollapsed) return; // Only update position when sidebar is expanded
+
+            toggleButton.classList.remove('left-0');
+            sidebar.classList.remove('w-0');
+            arrowIcon.classList.remove("rotate-180");
+
+            if (isXL) {
+                toggleButton.classList.remove('left-24');                
+                sidebar.classList.remove('w-24');
+
+                toggleButton.classList.add('xl:left-32');
+                sidebar.classList.add('xl:w-32');
+            } else {
+                toggleButton.classList.remove('xl:left-32');
+                sidebar.classList.remove('xl:w-32');
+
+                toggleButton.classList.add('left-24');
+                sidebar.classList.add('w-24');
+            }
+        }
+
+        toggleButton.addEventListener("click", () => {
+            const isXL = window.innerWidth >= 1280;
+
+            if (isCollapsed) {
+                // Expand
+                sidebar.classList.remove('w-0');
+                toggleButton.classList.remove('left-0');
+
+                if (isXL) {
+                    toggleButton.classList.add('xl:left-32');
+                    sidebar.classList.add('xl:w-32');
+                } else {
+                    toggleButton.classList.add('left-24');
+                    sidebar.classList.add('w-24');
+                }
+
+                arrowIcon.classList.remove("rotate-180");
+            } else {
+                // Collapse
+                sidebar.classList.replace('xl:w-32', 'w-24');
+                toggleButton.classList.replace('xl:left-32', 'left-24');
+
+                sidebar.classList.add('w-0');
+                toggleButton.classList.add('left-0');
+                arrowIcon.classList.add("rotate-180");
+            }
+
+            isCollapsed = !isCollapsed;
+        });
+
+        // Handle screen resize
+        window.addEventListener('resize', updateSidebarClasses);
+    });
+</script>

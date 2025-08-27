@@ -1,0 +1,636 @@
+<!-- Dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <!-- script -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/script-name.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+<style>
+    .custom-radio-wrapper input[type="radio"] {
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border: 1px solid #9CA3AF;
+        /* gray-400 */
+        border-radius: 50%;
+        display: inline-block;
+        position: relative;
+        cursor: pointer;
+        outline: none;
+        background-color: white;
+    }
+
+    .custom-radio-wrapper input[type="radio"]::after {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background-color: #4B5563;
+        /* gray-600 */
+        border-radius: 50%;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        transform: scale(0);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .custom-radio-wrapper input[type="radio"]:checked::after {
+        transform: scale(1);
+    }
+
+    .apexcharts-legend.apexcharts-align-center.apx-legend-position-right {
+        display: flex !important;
+        flex-direction: column;
+        justify-content: center;
+        height: 100% !important;
+        top: 0 !important;
+        left: auto !important;
+        right: 0 !important;
+    }
+
+    /* Apply -50px only on large screens */
+    @media (min-width: 1200px) {
+        .apexcharts-legend.apexcharts-align-center.apx-legend-position-right {
+            right: -50px !important;
+        }
+    }
+
+    body,
+    .font-sans {
+        font-family: 'Inter', sans-serif !important;
+    }
+</style>
+
+<body class="font-[Inter] bg-gray-50">
+
+    <div class="flex flex-row h-screen w-[100vw]">
+        {% include 'AdminSideNavBar.html' %}
+
+        <section id="main-content"
+            class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out text-gray-700 body-font mt-16">
+            <div class="flex flex-col justify-around">
+                <!-- Header Section -->
+                <div class="w-full container py-2 bg-gradient-to-r from-cyan-500">
+                    <p class="ml-16 text-white font-medium text-lg">Dashboard</p>
+                </div>
+
+                <!-- Statistics Section -->
+                <div class="w-full container pt-8 pb-2">
+                    <div class="flex flex-wrap text-left justify-center md:justify-between">
+                        <!-- Tile 1 -->
+                        <div class="p-4 w-full md:w-1/4">
+                            <div class="p-4 lg:p-4 h-full rounded-lg bg-white"
+                                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                                <p class="font-medium pb-4" style="color: var(--links-color);">Active Institutions
+                                </p>
+                                <div class="flex flex-row justify-between">
+                                    <div class="flex flex-col justify-between">
+                                        <h2 class="title-font font-semibold text-lg xl:text-xl text-gray-600">
+                                            {{active_institutions}}</h2>
+                                        <div class="flex flex-row justify-between mt-4">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <img
+                                            src="{{ url_for('static', filename='../static/images/DashTiles/Institution.svg') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tile 2 -->
+                        <div class="p-4 w-full md:w-1/4">
+                            <div class="p-4 lg:p-4 h-full rounded-lg bg-white"
+                                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                                <p class="font-medium pb-4" style="color: var(--links-color);">Inactive Institutions
+                                </p>
+                                <div class="flex flex-row justify-between">
+                                    <div class="flex flex-col justify-between">
+                                        <h2 class="title-font font-semibold text-lg xl:text-xl text-gray-600">
+                                            {{inactive_institutions}}</h2>
+                                        <div class="flex flex-row justify-between mt-4">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <img
+                                            src="{{ url_for('static', filename='../static/images/DashTiles/Institution.svg') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tile 3 -->
+                        <div class="p-4 w-full md:w-1/4">
+                            <div class="p-4 lg:p-4 h-full rounded-lg bg-white"
+                                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                                <p class="font-medium pb-4" style="color: var(--links-color);">Active Subscribers
+                                </p>
+                                <div class="flex flex-row justify-between">
+                                    <div class="flex flex-col justify-between">
+                                        <h2 class="title-font font-semibold text-lg xl:text-xl text-gray-600">
+                                            {{active_subscribers}}</h2>
+                                        <div class="flex flex-row justify-between mt-4">
+                                            {% if delta_active_subscribers > 0 %}
+                                            <img
+                                                src="{{ url_for('static', filename='../static/images/DashTiles/UpArrow.svg') }}">
+                                            <p class="font-medium text-green-500">+{{ delta_active_subscribers }}</p>
+                                            {% elif delta_active_subscribers < 0 %} <img
+                                                src="{{ url_for('static', filename='../static/images/DashTiles/DownArrow.svg') }}">
+                                                <p class="font-medium text-red-500">-{{ delta_active_subscribers }}</p>
+                                                {% else %}
+                                                <!-- <img
+                                                    src="{{ url_for('static', filename='../static/images/DashTiles/UpArrow.svg') }}"> -->
+                                                <p class="font-medium text-gray-500">0</p>
+                                                {% endif %}
+
+                                                <p>/ month</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <img
+                                            src="{{ url_for('static', filename='../static/images/DashTiles/Subscriber.svg') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tile 4 -->
+                        <div class="p-4 w-full md:w-1/4">
+                            <div class="p-4 lg:p-4 h-full rounded-lg bg-white"
+                                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                                <p class="font-medium pb-4" style="color: var(--links-color);">Inactive Subscribers
+                                </p>
+                                <div class="flex flex-row justify-between">
+                                    <div class="flex flex-col justify-between">
+                                        <h2 class="title-font font-semibold text-lg xl:text-xl text-gray-600">
+                                            {{inactive_subscribers}}</h2>
+                                        <div class="flex flex-row justify-between mt-4">
+                                            {% if delta_inactive_subscribers > 0 %}
+                                            <img
+                                                src="{{ url_for('static', filename='../static/images/DashTiles/UpArrow.svg') }}">
+                                            <p class="font-medium text-green-500">+{{ delta_inactive_subscribers }}</p>
+                                            {% elif delta_inactive_subscribers < 0 %} <img
+                                                src="{{ url_for('static', filename='../static/images/DashTiles/DownArrow.svg') }}">
+                                                <p class="font-medium text-red-500">-{{ delta_inactive_subscribers }}
+                                                </p>
+                                                {% else %}
+                                                <!-- <img
+                                                    src="{{ url_for('static', filename='../static/images/DashTiles/UpArrow.svg') }}"> -->
+                                                <p class="font-medium text-gray-500">0</p>
+                                                {% endif %}
+
+                                                <p>/ month</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <img
+                                            src="{{ url_for('static', filename='../static/images/DashTiles/Subscriber.svg') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tile 5 -->
+                        <div class="p-4 w-full md:w-1/4">
+                            <div class="p-4 lg:p-4 h-full rounded-lg bg-white"
+                                style="box-shadow: 0px 0px 4px 0px #00000040; min-height: 16vh;">
+                                <p class="font-medium pb-4" style="color: var(--links-color);">Upcoming Renewals
+                                </p>
+                                <div class="flex flex-row justify-between">
+                                    <div class="flex flex-col justify-between">
+                                        <h2 class="title-font font-semibold text-lg xl:text-xl text-gray-600">
+                                            {{upcoming_renewals}}</h2>
+                                        <div class="flex flex-row justify-between mt-4">
+                                            {% if delta_upcoming_renewals > 0 %}
+                                            <img
+                                                src="{{ url_for('static', filename='../static/images/DashTiles/UpArrow.svg') }}">
+                                            <p class="font-medium text-green-500">+{{ delta_upcoming_renewals }}</p>
+                                            {% elif delta_upcoming_renewals < 0 %} <img
+                                                src="{{ url_for('static', filename='../static/images/DashTiles/DownArrow.svg') }}">
+                                                <p class="font-medium text-red-500">-{{ delta_upcoming_renewals }}</p>
+                                                {% else %}
+                                                <!-- <img
+                                                    src="{{ url_for('static', filename='../static/images/DashTiles/UpArrow.svg') }}"> -->
+                                                <p class="font-medium text-gray-500">0</p>
+                                                {% endif %}
+
+                                                <p>/ month</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <img
+                                            src="{{ url_for('static', filename='../static/images/DashTiles/AutoRenew.svg') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="w-full container grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                    <!-- Total New Users -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="items-center mb-4">
+                            <h3 class="text-lg font-bold">Total New Users</h3>
+                            <div class="space-x-4 mt-4 flex">
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="new-users" value="quarter" checked>
+                                    <span>By Quarter</span>
+                                </label>
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="new-users" value="month">
+                                    <span>By Month</span>
+                                </label>
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="new-users" value="week">
+                                    <span>By Week</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="bar-chart-users" class="w-full h-72"></div>
+                    </div>
+
+                    <!-- Test Utilization Pie Chart -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="items-center mb-4">
+                            <h3 class="text-lg font-bold">Test Utilisation Report</h3>
+                            <div class="space-x-2 mt-4">
+                                <label class="custom-radio-wrapper"><input type="radio" name="test-utilisation" checked>
+                                    By Tests</label>
+                                <label class="custom-radio-wrapper"><input type="radio" name="test-utilisation"> By
+                                    Users</label>
+                            </div>
+                        </div>
+                        <div id="pie-chart-util" class="w-full h-72"></div>
+                    </div>
+
+                    <!-- Total Billings -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="items-center mb-4">
+                            <h3 class="text-lg font-bold">Total Billings</h3>
+                            <div class="space-x-4 mt-4 flex">
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="billings" value="quarter" checked>
+                                    <span>By Quarter</span>
+                                </label>
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="billings" value="month">
+                                    <span>By Month</span>
+                                </label>
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="billings" value="week">
+                                    <span>By Week</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="bar-chart-billings" class="w-full h-72"></div>
+                    </div>
+
+                    <!-- Total Revenue -->
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="items-center mb-4">
+                            <h3 class="text-lg font-bold">Total Revenue</h3>
+                            <div class="space-x-4 mt-4 flex">
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="revenue" value="quarter" checked>
+                                    <span>By Quarter</span>
+                                </label>
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="revenue" value="month">
+                                    <span>By Month</span>
+                                </label>
+                                <label class="custom-radio-wrapper flex items-center space-x-1 text-gray-600">
+                                    <input type="radio" name="revenue" value="week">
+                                    <span>By Week</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="bar-chart-revenue" class="w-full h-72"></div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let charts = {};
+
+        // Generalized function to fetch pie chart data
+        const fetchPieChartData = async (url) => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                // console.error(`Error fetching pie chart data from ${url}:`, error);
+                return { labels: [], series: [] }; // Fallback for errors
+            }
+        };
+
+        // Generalized function to get pie chart options
+        const getPieChartOptions = async (url) => {
+            const pieChartData = await fetchPieChartData(url);
+            return {
+                series: pieChartData.series,
+                colors: ["#0ABDDB", "#F2BC2A", "#FB9251"],
+                chart: {
+                    type: "pie",
+                    width: 450,
+                    height: 450
+                },
+                stroke: {
+                    colors: ["white"],
+                    lineCap: "",
+                },
+                plotOptions: {
+                    pie: {
+                        labels: {
+                            show: true,
+                        },
+                        dataLabels: {
+                            offset: -25,
+                        },
+                    },
+                },
+                labels: pieChartData.labels,
+                dataLabels: {
+                    enabled: true,
+                    style: {
+                        fontFamily: "Inter, sans-serif",
+                    },
+                },
+                legend: {
+                    show: true,
+                    position: "right",
+                    fontFamily: "Inter, sans-serif",
+                    formatter: function (seriesName, opts) {
+                        return `${seriesName}: ${opts.w.globals.series[opts.seriesIndex]}`;
+                    }
+                },
+                responsive: [{
+                    breakpoint: 768,  // screens smaller than 768px
+                    options: {
+                        legend: {
+                            position: "bottom"
+                        },
+                        chart: {
+                            width: "100%",
+                            height: "80%"
+                        }
+                    }
+                }],
+            };
+        };
+
+        // Function to initialize a pie chart
+        const initializePieChart = async (elementId, url) => {
+            if (document.getElementById(elementId) && typeof ApexCharts !== 'undefined') {
+                getPieChartOptions(url)
+                    .then((options) => {
+                        if (charts[elementId]) {
+                            charts[elementId].destroy();
+                        }
+                        charts[elementId] = new ApexCharts(document.getElementById(elementId), options);
+                        charts[elementId].render();
+                    })
+                    .catch((error) => {
+                        // console.error("Error initializing the pie chart:", error);
+                    });
+            }
+        };
+
+        const fetchBarChartData = async (url) => {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                // console.error("Error fetching bar chart data:", error);
+                return { series: {} }; // Fallback for errors
+            }
+        };
+
+        const getBarChartOptions = async (elementId, url) => {
+            const barChartData = await fetchBarChartData(url);
+            const numBars = barChartData.series[0].data.length;
+            const chartWidth = numBars * (30);
+            document.getElementById(elementId).style.minWidth = `${chartWidth}px`;
+
+            return {
+                series: barChartData.series,
+                chart: {
+                    type: "bar",
+                    height: "300px",
+                    fontFamily: "Inter, sans-serif",
+                    toolbar: {
+                        show: false,
+                    },
+                },
+                legend: {
+                    show: false
+                },
+                plotOptions: {
+                    bar: {
+                        borderRadius: 5,
+                        borderRadiusApplication: "top",
+                        horizontal: false,
+                        columnWidth: "15px", // Adds spacing between bars
+                    },
+                },
+                tooltip: {
+                    shared: true,
+                    intersect: false,
+                    style: {
+                        fontFamily: "Inter, sans-serif",
+                    },
+                },
+                states: {
+                    hover: {
+                        filter: {
+                            type: "darken",
+                            value: 0.85,
+                        },
+                    },
+                },
+                stroke: {
+                    show: true,
+                    width: 1,
+                    colors: ["transparent"],
+                },
+                grid: {
+                    show: true,
+                    strokeDashArray: 4,
+                },
+                dataLabels: {
+                    enabled: false,
+                },
+                xaxis: {
+                    labels: {
+                        show: true,
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                            cssClass: "text-xs font-normal fill-gray-500 dark:fill-gray-400",
+                        },
+                    },
+                    axisBorder: {
+                        show: true, // Show x-axis border
+                        color: "#E0E0E0",
+                    },
+                    axisTicks: {
+                        show: true, // Show x-axis ticks
+                        color: "#E0E0E0",
+                    },
+                },
+                yaxis: {
+                    show: true, // Show y-axis
+                    labels: {
+                        style: {
+                            fontFamily: "Inter, sans-serif",
+                        },
+                        formatter: function (value) {
+                            return value.toFixed(0); // Format to 2 decimal points
+                        },
+                    },
+                    axisBorder: {
+                        show: true, // Show y-axis border
+                        color: "#E0E0E0",
+                    },
+                    axisTicks: {
+                        show: true, // Show y-axis ticks
+                        color: "#E0E0E0",
+                    },
+                },
+                fill: {
+                    type: "gradient", // Enable gradient fill
+                    gradient: {
+                        shade: "light",
+                        type: "vertical",
+                        shadeIntensity: 0.5,
+                        gradientToColors: ["#D3D3D3"], // Gradient endpoint color
+                        inverseColors: false,
+                        stops: [0, 100], // Control gradient positions
+                    },
+                },
+                colors: ["#00C6FB"]
+            };
+        };
+
+        // Function to initialize a bar chart
+        const initializeBarChart = async (elementId, url) => {
+            if (document.getElementById(elementId) && typeof ApexCharts !== 'undefined') {
+                getBarChartOptions(elementId,url)
+                    .then((options) => {
+                        if (charts[elementId]) {
+                            charts[elementId].destroy();
+                        }
+                        charts[elementId] = new ApexCharts(document.getElementById(elementId), options);
+                        charts[elementId].render();
+                    })
+                    .catch((error) => {
+                        // console.error("Error initializing the bar chart:", error);
+                    });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Users
+            document.querySelectorAll('input[name="new-users"]').forEach(radio => {
+                radio.addEventListener("change", () => {
+                    const urlMap = {
+                        quarter: "/BarChartUsersQuarter",
+                        month: "/BarChartUsersMonth",
+                        week: "/BarChartUsersWeek"
+                    };
+                    initializeBarChart("bar-chart-users", urlMap[radio.value]);
+                });
+            });
+
+            // Utilisation
+            document.querySelectorAll('input[name="test-utilisation"]').forEach((radio, index) => {
+                radio.addEventListener("change", () => {
+                    const url = index === 0 ? "/PieChartTests" : "/PieChartUsers";
+                    initializePieChart("pie-chart-util", url);
+                });
+            });
+
+            // Billings
+            document.querySelectorAll('input[name="billings"]').forEach(radio => {
+                radio.addEventListener("change", () => {
+                    const urlMap = {
+                        quarter: "/BarChartBillingsQuarter",
+                        month: "/BarChartBillingsMonth",
+                        week: "/BarChartBillingsWeek"
+                    };
+                    initializeBarChart("bar-chart-billings", urlMap[radio.value]);
+                });
+            });
+
+            // Revenue
+            document.querySelectorAll('input[name="revenue"]').forEach(radio => {
+                radio.addEventListener("change", () => {
+                    const urlMap = {
+                        quarter: "/BarChartRevenueQuarter",
+                        month: "/BarChartRevenueMonth",
+                        week: "/BarChartRevenueWeek"
+                    };
+                    initializeBarChart("bar-chart-revenue", urlMap[radio.value]);
+                });
+            });
+
+            // Initial load
+            initializeBarChart("bar-chart-users", "/BarChartUsersQuarter");
+            initializePieChart("pie-chart-util", "/PieChartTests");
+            initializeBarChart("bar-chart-billings", "/BarChartBillingsQuarter");
+            initializeBarChart("bar-chart-revenue", "/BarChartRevenueQuarter");
+        });
+
+    </script>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script>
+        {% for category, message in messages %}
+        alert("{{ message | escape }}");
+        {% endfor %}
+    </script>
+    {% endif %}
+    {% endwith %}
+
+</body>
+
+</html>

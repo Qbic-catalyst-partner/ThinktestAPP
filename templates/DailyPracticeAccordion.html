@@ -1,0 +1,473 @@
+<!-- Completed Section Header -->
+<div class="container pb-2">
+    <div class="flex flex-col md:flex-row justify-between">
+        <h1 class="font-bold mt-2" style="color: var(--links-color);">Completed
+            ({{(dp_attempt_details_completed|default([])|length)}})</h1>
+        <button type="button" id="open-modal" class="text-white font-medium rounded-lg md:px-8 md:py-2 md:mt-0 p-4 mt-2"
+            style="background-color: var(--links-color);">Create Schedule</button>
+    </div>
+</div>
+
+<!-- Completed Section Accordion -->
+<div id="accordion-collapse" class="mt-4 overflow-y-auto space-y-4" data-accordion="collapse">
+    <div>
+        {% for attempt_id, attempt in dp_attempt_details_completed.items() %}
+        <h2 id="accordion-collapse-heading-{{ loop.index }}">
+            <button type="button"
+                class="flex items-center rounded-lg shadow justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 gap-3 mb-4 bg-white"
+                style="box-shadow: 0px 0px 4px 0px #00000040;"
+                data-accordion-target="#accordion-collapse-body-{{ loop.index }}" aria-expanded="false"
+                aria-controls="accordion-collapse-body-{{ loop.index }}">
+
+                <span>{{ attempt.date }}</span>
+                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5 5 1 1 5" />
+                </svg>
+            </button>
+        </h2>
+        <div id="accordion-collapse-body-{{ loop.index }}" class="hidden"
+            aria-labelledby="accordion-collapse-heading-{{ loop.index }}">
+            <div class="border border-gray-200 mb-4" style="border-top: none;">
+                <div class="flex flex-col items-center mb-4">
+                    <div class="flex flex-row justify-between items-center w-[70vw] mb-6">
+                        <h3 class="flex font-bold"> Test Id : {{ attempt_id }} | Score : {{attempt.score}} | Max
+                            Score: {{attempt.max_score}}</h3>
+                        <div class="flex flex-row gap-x-4 items-center">
+                            <button class="fa-regular fa-copy" id="fa-copy-completed"></button>
+                            <form method="POST" action="/delete_dp_attempt">
+                                <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                                <button type="submit" class="fa-solid fa-trash delete-row-btn"></button>
+                            </form>
+                        </div>
+                        <div id="viewReportButton-{{loop.index}}" class="viewReportButton"
+                            data-attempt-id="{{ attempt_id }}">
+                            <button id="navigateToReport"
+                                class="mt-3 bg-white text-blue-600 border border-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg w-full"
+                                style="border-color: var(--links-color); color: var(--links-color);">
+                                View Report
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative overflow-x-auto w-[70vw]">
+                        <table class="w-full text-sm text-left text-gray-900">
+                            <thead class="text-xs text-gray-900 uppercase bg-gray-300">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">
+                                        Subject
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Modules
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Difficulty Level
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Number of Questions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for config in attempt['configs'] %}
+                                <tr class="bg-white border-b">
+                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                                        value="{{config.subject_id}}">
+                                        {{ config.subject_name }}
+                                    </th>
+                                    <td class="px-6 py-4" value="{{config.module_id}}">
+                                        {{ config.module_name }}
+                                    </td>
+                                    <td class="px-6 py-4" value="{{config.difficulty_level}}">
+                                        <span>
+                                            {{ config.difficulty_level }} - {{ difficulty_map[config.difficulty_level]
+                                            }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4" value="{{ config.question_count }}">
+                                        {{ config.question_count }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Incomplete Section Header -->
+<div class="container pt-8 pb-2">
+    <div class="flex flex-row justify-between">
+        <h1 class="font-bold mt-2" style="color: var(--links-color);">Partially Completed
+            ({{(dp_attempt_details_incomplete|default([])|length)}})</h1>
+    </div>
+</div>
+
+<!-- Incomplete Section Accordion -->
+<div id="accordion-collapse" class="mt-4 overflow-y-auto space-y-4" data-accordion="collapse">
+    <div>
+        {% for attempt_id, attempt in dp_attempt_details_incomplete.items() %}
+        <h2 id="accordion-collapse-heading-{{ loop.index }}">
+            <button type="button"
+                class="flex items-center rounded-lg shadow justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 gap-3 mb-4 bg-white"
+                style="box-shadow: 0px 0px 4px 0px #00000040;"
+                data-accordion-target="#accordion-collapse-body-incomplete-{{ loop.index }}" aria-expanded="false"
+                aria-controls="accordion-collapse-body-incomplete-{{ loop.index }}">
+
+                <span>{{ attempt.date }}</span>
+                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5 5 1 1 5" />
+                </svg>
+            </button>
+        </h2>
+        <div id="accordion-collapse-body-incomplete-{{ loop.index }}" class="hidden"
+            aria-labelledby="accordion-collapse-heading-{{ loop.index }}">
+            <div class="border border-gray-200 mb-4" style="border-top: none;">
+                <div class="flex flex-col items-center mb-4">
+                    <div class="flex flex-row justify-between items-center w-[70vw] mb-6">
+                        <h3 class="flex font-bold"> Test Id : {{ attempt_id }}</h3>
+                        <div class="flex flex-row gap-x-4 items-center">
+                            <button class="fa-regular fa-copy" id="fa-copy-incomplete"></button>
+                            <form method="POST" action="/delete_dp_attempt">
+                                <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                                <button type="submit" class="fa-solid fa-trash delete-row-btn"></button>
+                            </form>
+                            <button class="fa-regular fa-pen-to-square"
+                                id="fa-edit-incomplete-{{ loop.index }}"></button>
+                        </div>
+                        <form action="{{ url_for('dailyPracticeTest') }}" method="POST">
+                            <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                            <button type="submit" class="text-white font-medium rounded-lg py-2 px-4"
+                                style="background-color: var(--links-color);">
+                                Continue
+                            </button>
+                        </form>
+                    </div>
+                    <div class="relative overflow-x-auto w-[70vw]">
+                        <table class="w-full text-sm text-left text-gray-900">
+                            <thead class="text-xs text-gray-900 uppercase bg-gray-300">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">
+                                        Subject
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Modules
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Difficulty Level
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Number of Questions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for config in attempt['configs'] %}
+                                <tr class="bg-white border-b">
+                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                                        value="{{config.subject_id}}">
+                                        {{ config.subject_name }}
+                                    </th>
+                                    <td class="px-6 py-4" value="{{config.module_id}}">
+                                        {{ config.module_name }}
+                                    </td>
+                                    <td class="px-6 py-4" value="{{config.difficulty_level}}">
+                                        <span>
+                                            {{ config.difficulty_level }} - {{ difficulty_map[config.difficulty_level]
+                                            }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4" value="{{ config.question_count }}">
+                                        {{ config.question_count }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <form class="flex flex-row gap-x-4 items-center mt-6 hidden" method="POST"
+                        action="/dp_edit_attempt_date" id="editdateform-{{loop.index}}" >
+                        <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                        <span class="text-xs text-gray-900 uppercase">Change date to : </span>
+                        <div class="w-72 min-w-[200px]">
+                            <input type="date" name ="change_attempt_date" id="change_attempt_date-{{loop.index}}"
+                                class="h-full w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:ring-cyan-500 focus:border-cyan-500" />
+                            <label class="absolute left-3 top-[-8px] text-xs text-gray-500" min="{{ min_date }}">To
+                                Date</label>
+                        </div>
+                        <button type="submit" class="text-white font-medium rounded-lg py-2 px-4"
+                            style="background-color: var(--links-color);">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Lapsed Section Header -->
+<div class="container pt-8 pb-2">
+    <div class="flex flex-row justify-between">
+        <h1 class="font-bold mt-2" style="color: var(--links-color);">Lapsed
+            ({{(dp_attempt_details_lapsed|default([])|length)}})</h1>
+    </div>
+</div>
+
+<!-- Lapsed Section Accordion -->
+<div id="accordion-collapse" class="mt-4 overflow-y-auto space-y-4" data-accordion="collapse">
+    <div>
+        {% for attempt_id, attempt in dp_attempt_details_lapsed.items() %}
+        <h2 id="accordion-collapse-heading-{{ loop.index }}">
+            <button type="button"
+                class="flex items-center rounded-lg shadow justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 gap-3 mb-4 bg-white"
+                style="box-shadow: 0px 0px 4px 0px #00000040;"
+                data-accordion-target="#accordion-collapse-body-lapsed-{{ loop.index }}" aria-expanded="false"
+                aria-controls="accordion-collapse-body-lapsed-{{ loop.index }}">
+
+                <span>{{ attempt.date }}</span>
+                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5 5 1 1 5" />
+                </svg>
+            </button>
+        </h2>
+        <div id="accordion-collapse-body-lapsed-{{ loop.index }}" class="hidden"
+            aria-labelledby="accordion-collapse-heading-{{ loop.index }}">
+            <div class="border border-gray-200 mb-4" style="border-top: none;">
+                <div class="flex flex-col items-center mb-4">
+                    <div class="flex flex-row justify-between items-center w-[70vw] mb-6">
+                        <h3 class="flex font-bold"> Test Id : {{ attempt_id }}</h3>
+                        <div class="flex flex-row gap-x-4 items-center">
+                            <button class="fa-regular fa-copy" id="fa-copy-lapsed"></button>
+                            <form method="POST" action="/delete_dp_attempt">
+                                <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                                <button type="submit" class="fa-solid fa-trash delete-row-btn"></button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="relative overflow-x-auto w-[70vw]">
+                        <table class="w-full text-sm text-left text-gray-900">
+                            <thead class="text-xs text-gray-900 uppercase bg-gray-300">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">
+                                        Subject
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Modules
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Difficulty Level
+                                    </th>
+                                    <th scope="col" class="px-6 py-3">
+                                        Number of Questions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for config in attempt['configs'] %}
+                                <tr class="bg-white border-b">
+                                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                                        value="{{config.subject_id}}">
+                                        {{ config.subject_name }}
+                                    </th>
+                                    <td class="px-6 py-4" value="{{config.module_id}}">
+                                        {{ config.module_name }}
+                                    </td>
+                                    <td class="px-6 py-4" value="{{config.difficulty_level}}">
+                                        <span>
+                                            {{ config.difficulty_level }} - {{ difficulty_map[config.difficulty_level]
+                                            }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4" value="{{ config.question_count }}">
+                                        {{ config.question_count }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+
+    function addRow(tableBody, subject_id, module_id, difficulty, questionCount) {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+                <td class="whitespace-nowrap border border-gray-300">
+                    <select id="subject-select" name="subject"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 bg-white border border-white sm:text-sm">
+                    <option value="" selected disabled class="text-[#909090]">Select Subject</option>
+                    {% for subject in all_subjects %}
+                    <option value="{{ subject.subject_id }}">{{ subject.subject_name }}</option>
+                    {% endfor %}
+                    </select>
+                </td>
+                <td class="whitespace-nowrap border border-gray-300">
+                    <select id="module-select" name="module"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 bg-white border border-white sm:text-sm">
+                    <option value="" selected disabled class="text-[#909090]">Select
+                        Module</option>
+                    {% for module in all_modules %}
+                    <option value="{{ module.module_id }}" data-subject-id="{{ module.subject_id }}">{{
+                        module.module_name}}</option>
+                    {% endfor %}
+                    </select>
+                </td>
+                <td class="whitespace-nowrap border border-gray-300">
+                    <select name="difficulty"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 bg-white border border-white sm:text-sm">
+                    <option value="" selected disabled class="text-[#909090]">Select Difficulty</option>
+                    <option value="1">Beginner</option>
+                    <option value="2">Intermediate</option>
+                    <option value="3">Proficient</option>
+                    <option value="4">Advanced</option>
+                    <option value="5">Expert</option>
+                    </select>
+                </td>
+                <td class="whitespace-nowrap border border-gray-300">
+                    <input type="number" name="questions"
+                    class="subject-questions mt-1 block w-full pl-3 py-2 bg-white border border-gray-300 rounded sm:text-sm"
+                    placeholder="Enter Number of Questions" min="1" step="1" required>
+                </td>
+                <td class="whitespace-nowrap border border-gray-300 text-center">
+                    <button type="button" class="delete-row-btn p-2 hover:text-red-800">
+                    <i class="fas fa-trash"></i>
+                    </button>
+                </td>`;
+
+        tableBody.appendChild(newRow); // Append the cloned row to the table body
+
+        // Attach subject-to-module mapping logic to the new row
+        const newSubjectSelect = newRow.querySelector('select[name="subject"]');
+        handleSubjectChange(newSubjectSelect);
+
+        // Attach delete-row functionality to the trash button in the new row
+        const newDeleteButton = newRow.querySelector('.delete-row-btn');
+        newDeleteButton.addEventListener('click', function () {
+            handleDeleteRow(newDeleteButton);
+        });
+
+        //setting values
+        newSubjectSelect.value = subject_id;
+        const moduleSelect = newRow.querySelector('select[name="module"]');
+        moduleSelect.value = module_id;
+        const difficultySelect = newRow.querySelector('select[name="difficulty"]');
+        difficultySelect.value = difficulty;
+        const questionCountSelect = newRow.querySelector('input[name="questions"]');
+        questionCountSelect.value = questionCount;
+    }
+
+    function copyconfigs(configs) {
+        // Show modal
+        document.getElementById('dp-module').classList.remove('hidden');
+
+        const tableBody = document.getElementById('subjects-tbody');
+
+        Array.from(configs).forEach(row => {
+            const subject = row.cells[0].getAttribute('value'); // Get value from <th>
+            const module = row.cells[1].getAttribute('value'); // Get value from <td>
+            const difficulty = row.cells[2].getAttribute('value'); // Get value from <td>
+            const questionCount = row.cells[3].getAttribute('value'); // Get value from <td>
+
+            // console.log({ subject, module, difficulty, questionCount });
+            addRow(tableBody, subject, module, difficulty, questionCount);
+        });
+    }
+
+    // Function to bind click event for copy icons
+    function bindCopyIcons() {
+        document.querySelectorAll('[id^="fa-copy-completed"]').forEach((copyIcon, index) => {
+            copyIcon.addEventListener('click', () => {
+                const configs = document.querySelector(`#accordion-collapse-body-${index + 1} tbody`).rows;
+                copyconfigs(configs);
+            });
+        });
+
+        document.querySelectorAll('[id^="fa-copy-incomplete"]').forEach((copyIcon, index) => {
+            copyIcon.addEventListener('click', () => {
+                const configs = document.querySelector(`#accordion-collapse-body-incomplete-${index + 1} tbody`).rows;
+                copyconfigs(configs);
+            });
+        });
+
+        document.querySelectorAll('[id^="fa-copy-lapsed"]').forEach((copyIcon, index) => {
+            copyIcon.addEventListener('click', () => {
+                const configs = document.querySelector(`#accordion-collapse-body-lapsed-${index + 1} tbody`).rows;
+                copyconfigs(configs);
+            });
+        });
+    }
+
+    // Function to bind click event for view report buttons
+    function bindViewReportButtons() {
+        const viewReportButtons = document.querySelectorAll(".viewReportButton");
+
+        viewReportButtons.forEach((buttonContainer) => {
+            const button = buttonContainer.querySelector("button");
+
+            button.addEventListener("click", function () {
+                const attemptId = buttonContainer.getAttribute("data-attempt-id");
+
+                // Create a form dynamically
+                const form = document.createElement("form");
+                form.method = "POST";
+                form.action = "/DailyPracticeReport";
+
+                // Add a hidden input for the attempt_id
+                const input = document.createElement("input");
+                input.type = "hidden";
+                input.name = "attempt_id";
+                input.value = attemptId;
+                form.appendChild(input);
+
+                // Append the form to the body and submit it
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    }
+
+    function bindEditIcon() {
+        // Select all edit buttons and loop through them
+        document.querySelectorAll('[id^="fa-edit-incomplete-"]').forEach((editButton) => {
+            // Add a click event listener to each button
+            editButton.addEventListener("click", function () {
+                // Extract the loop index from the button's id
+                const index = editButton.id.split('-').pop();
+                // console.log(index);
+
+                // Select the corresponding form using the loop index
+                const editForm = document.getElementById(`editdateform-${index}`);
+
+                // Remove the 'hidden' class from the form
+                if (editForm.classList.contains("hidden")) {
+                    // Set the min attribute to today's date                    
+                    const todayDate = getTodayDate();
+                    const dateInput = document.getElementById(`change_attempt_date-${index}`);
+                    dateInput.min = todayDate;
+                    editForm.classList.remove("hidden");
+                }
+            });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        bindCopyIcons();
+        bindViewReportButtons();
+        bindEditIcon();
+    });
+
+</script>

@@ -1,0 +1,99 @@
+<!-- AdminInstitutionPartial.html -->
+<table class="min-w-full bg-white border border-gray-200">
+    <thead>
+      <tr>
+        <th class="p-4 text-center text-gray-500">ID</th>
+        <th class="p-4 text-center text-gray-500">Institution Name</th>
+        <th class="p-4 text-center text-gray-500">Enrolment Date</th>
+        <th class="p-4 text-center text-gray-500"># Students</th>
+        <!-- <th class="p-4 text-center text-gray-500">Plan</th>
+        <th class="p-4 text-center text-gray-500">Valid Until</th> -->
+        <th class="p-4 text-center text-gray-500">Status</th>
+        <th class="p-4 text-center text-gray-500">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="institution-table-body">
+      {% for inst, count in institutions %}
+      <tr class="border-t">
+        <td class="p-4 text-center text-sm">{{ inst.id }}</td>
+        <td class="p-4 text-center text-sm">{{ inst.name }}</td>
+        <td class="p-4 text-center text-sm">{{ inst.created_on.strftime('%d/%m/%Y') if inst.created_on else '—' }}</td>
+        <td class="p-4 text-center text-sm">{{ count }}</td>
+        <!-- <td class="p-4 text-center text-sm">{{ inst.plan }}</td> -->
+        <!-- <td class="p-4 text-center text-sm">{{ inst.valid_until.strftime('%d/%m/%Y') if inst.valid_until else '—' }}</td> -->
+        <td class="p-4 text-center text-sm">
+          {% if inst.status == 'Active' %}
+          <span class="inline-block bg-teal-200 text-teal-700 border border-teal-700 px-2 py-1 rounded-lg w-24 text-center">Active</span>
+          {% else %}
+          <span class="inline-block bg-red-200 text-red-700 border border-red-700 px-2 py-1 rounded-lg w-24 text-center">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="p-4 flex items-center justify-center gap-2">
+          <a href="{{ url_for('updateInstitution', institution_id=inst.id) }}" class="text-gray-400 hover:text-blue-700">
+            <i class="fas fa-edit"></i>
+          </a>
+          <button class="text-gray-400 hover:text-red-700" onclick="deleteInstitution({{ inst.id }})">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>  
+
+<div class="flex flex-row justify-between p-4 gap-2 bg-white border border-gray-200">
+    {% if institutions|length > 0 %}
+    <p class="text-sm text-gray-500 mt-2">
+        Showing data {{ (page - 1) * 50 + 1 }} to {{ (page - 1) * 50 + institutions|length }} of total entries
+    </p>
+    {% else %}
+    <p class="text-sm text-gray-500 mt-2">0 of 0 entries</p>
+    {% endif %}
+    
+    <div class="flex flex-row gap-2">
+
+        <button onclick="fetchPage({{ prev_num }})"
+            class="px-3 py-1 bg-gray-200 text-gray-900 border rounded-md {{ 'opacity-50 cursor-not-allowed' if not has_prev else '' }}"
+            {% if not has_prev %}disabled{% endif %}>&lt;</button>
+
+        <!-- Left ellipsis + page 1 (only if window doesn't start at 1) -->
+        {% if block_start > 1 %}
+        <button onclick="fetchPage(1)" class="px-2 py-1 text-xs sm:text-sm border rounded-md">1</button>
+        <span class="px-1 text-gray-400 select-none">…</span>
+        {% endif %}
+
+        {% for p in range(block_start, block_end + 1) %}
+        <button onclick="fetchPage({{ p }})"
+            class="px-3 py-1 border rounded-md {% if p == page %}bg-cyan-500 text-white{% endif %}">{{ p }}</button>
+        {% endfor %}
+
+        <!-- Right ellipsis + last page (only if window doesn't end at last) -->
+        {% if block_end < total_pages %} <span class="px-1 text-gray-400 select-none">…</span>
+            <button onclick="fetchPage({{ total_pages }})"
+                class="px-2 py-1 text-xs sm:text-sm border rounded-md">{{total_pages }}</button>
+            {% endif %}
+
+            <button onclick="fetchPage({{ next_num }})"
+                class="px-3 py-1 bg-gray-200 text-gray-900 border rounded-md {{ 'opacity-50 cursor-not-allowed' if not has_next else '' }}"
+                {% if not has_next %}disabled{% endif %}>&gt;</button>
+    </div>
+</div>
+
+
+
+<!-- Pagination Fetch Script -->
+<script>
+  function fetchPage(pageNumber) {
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    formData.append('page', pageNumber);
+
+    const params = new URLSearchParams(formData).toString();
+
+    fetch(`/AdminInstitutionPartial?${params}`)
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('institution-table-wrapper').innerHTML = html;
+      });
+  }
+</script>

@@ -1,0 +1,344 @@
+<!-- AdminEditSubscriber.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Subscriber</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/script-name.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body class="font-[Inter] bg-gray-50">
+    <div class="flex flex-row h-screen w-full" style="background-color: #f0f4f9;">
+        {% include 'AdminSideNavBar.html' %}
+
+        <section id="main-content"
+            class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out block text-sm font-medium text-gray-500 mb-1 body-font mt-16">
+            <div class="flex flex-col justify-around">
+                <div class="w-full container py-2 bg-gradient-to-r from-cyan-500">
+                    <p class="ml-16 text-white font-medium text-lg">Edit Student Details</p>
+                </div>
+
+                <form id="editForm" class="w-full container">
+                    <input type="hidden" id="edit_id" name="student_id" value="{{ student.student_id }}">
+                    <input type="hidden" id="edit_subscription_id" name="subscription_id"
+                        value="{{ subscription.subscription_id }}">
+                    <div class="p-4 mt-4 flex flex-col md:flex-row md:justify-end">
+                        <!-- Profile Image -->
+                        <div class="flex flex-col justify-center items-center space-x-3 md:w-1/3">
+
+                            <!-- Circular profile image -->
+                            <div
+                                class="relative w-32 h-32 md:w-64 md:h-64 rounded-full overflow-hidden border-2 border-gray-300">
+                                <img id="profilePicPreview"
+                                    src="{{ profile_pic_url if profile_pic_url else url_for('static', filename='images/staticprofile.png') }}"
+                                    alt="Profile Picture" class="object-cover w-full h-full">
+                            </div>
+
+                            <!-- Open Modal Button -->
+                            <button id="openProfilePicModal" type="button"
+                                class="mt-2 w-32 px-4 py-2 bg-cyan-500 text-white rounded">
+                                Edit
+                            </button>
+                        </div>
+
+                        <!-- Profile Details -->
+                        <div class="mt-6 md:mt-0 md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- First Name -->
+                            <div>
+                                <p class="block text-sm text-gray-500 mb-1">First Name</p>
+                                <input type="text" id="edit_first_name" value="{{ student.first_name }}"
+                                    class="shadow border-0 w-80 h-10 rounded-md text-sm" />
+                            </div>
+
+                            <!-- Last Name -->
+                            <div>
+                                <p class="block text-sm text-gray-500 mb-1">Last Name</p>
+                                <input type="text" id="edit_last_name" value="{{ student.last_name }}"
+                                    class="shadow border-0 w-80 h-10 rounded-md text-sm" />
+                            </div>
+
+                            <!-- Gender Selection -->
+                            <div>
+                                <p class="block text-sm text-gray-500 mb-1">Gender
+                                    <input type="hidden" name="gender" id="gender" value="{{ student.gender }}">
+
+                                <div class="flex gap-4 font-normal">
+                                    <button type="button" id="maleBtn"
+                                        class="w-32 px-4 py-2 rounded shadow border-0 {% if student.gender == 'M' %}bg-cyan-500 text-white{% else %}bg-white block text-sm text-gray-500 mb-1{% endif %}"
+                                        onclick="selectGender('M')">Male</button>
+
+                                    <button type="button" id="femaleBtn"
+                                        class="w-32 px-4 py-2 rounded border {% if student.gender == 'F' %}bg-cyan-500 text-white{% else %}bg-white block text-sm text-gray-500 mb-1{% endif %}"
+                                        onclick="selectGender('F')">Female</button>
+                                </div>
+
+                            </div>
+
+
+                            <!-- Date of Birth -->
+                            <div>
+                                <p class="block text-sm text-gray-500 mb-1">Date of Birth</p>
+                                <input type="date" id="edit_dob" value="{{ student.dob }}"
+                                    class="shadow border-0 w-80 h-10 rounded-md text-sm" />
+                            </div>
+
+                            {% if student.institution_id %}
+                            <!-- Institution Name -->
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Institution Name</label>
+                                <!-- <select id="edit_institution"
+                                    class="w-full shadow border-0 p-2 w-80 h-10 rounded font-normal">
+                                    {% for inst in institution_names %}
+                                    <option value="{{ inst.id }}" {% if inst.id==student.institution_id %}selected{%
+                                        endif %}>
+                                        {{ inst.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select> -->
+                                <input type="text"
+                                    class="w-full shadow border-0 w-80 h-10 rounded bg-gray-100 text-gray-500 cursor-not-allowed font-normal"
+                                    value="{{ institution_name}}" disabled>
+                                <!-- Hidden input to actually submit the ID -->
+                                <input type="hidden" name="institution_id" value="{{ student.institution_id }}">
+                            </div>
+                            {% else %}
+                            <!-- Plan set to "None" -->
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Institution Name</label>
+                                <input type="text" id="edit_institution"
+                                    class="w-full shadow border-0 w-80 h-10 rounded bg-gray-100 text-gray-500 cursor-not-allowed font-normal"
+                                    value="None" disabled>
+                            </div>
+                            {% endif %}
+
+                            <!-- Enrollment Date -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1 block mb-1">Enrollment
+                                    Date</label>
+                                <input type="text"
+                                    class="w-full shadow border-0 w-80 h-10 rounded bg-gray-100 text-gray-500 cursor-not-allowed font-normal"
+                                    value="{{ student.enrolment_date.strftime('%d %B %Y')  if student and student.enrolment_date else 'N/A' }}"
+                                    disabled>
+                            </div>
+
+                            <!-- Contact Number -->
+                            <div>
+                                <p class="block text-sm text-gray-500 mb-1">Contact Number</p>
+                                <input type="text" id="edit_contact" value="{{ student.contact_no }}"
+                                    class="shadow border-0 p-2 rounded-md w-80 h-10 text-sm" required
+                                    pattern="[6-9][0-9]{9}"
+                                    title="Phone number must start with 6, 7, 8, or 9 and be 10 digits long."
+                                    required />
+                                <button id="sendOtpButton" onclick="sendMobileOtp(event)"
+                                    class="text-cyan-600 underline mt-2 hidden">Verify</button>
+                            </div>
+
+                            <!-- Email Address -->
+                            <div>
+                                <p class="block text-sm text-gray-500 mb-1">Email Address</p>
+                                <input type="text"
+                                    class="w-full shadow border-0 w-80 h-10 rounded bg-gray-100 text-gray-500 cursor-not-allowed font-normal"
+                                    value="{{ student.email }}" disabled>
+                            </div>
+
+                            {% if student.institution_id is none %}
+                            <!-- Plan Details -->
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Your Plan:</label>
+                                <select name="plan" id="edit_plan"
+                                    class="shadow border-0 w-80 h-10 rounded-md text-sm p-2">
+                                    {% for plan in plan_options %}
+                                    <option value="{{ plan.id }}" {% if subscription and subscription.plan_id==plan.id
+                                        %}selected{% endif %}>
+                                        {{ plan.name }} - ₹{{ plan.cost }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% else %}
+                            <!-- Plan set to "None" -->
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Your Plan:</label>
+                                <input type="text" id="edit_plan"
+                                    class="w-full shadow border-0 w-80 h-10 rounded bg-gray-100 text-gray-500 cursor-not-allowed font-normal"
+                                    value="None" disabled>
+                            </div>
+                            {% endif %}
+
+                            <!-- Subscription Status -->
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Status:</label>
+                                <select name="status" id="edit_status"
+                                    class="shadow border-0 w-80 h-10 rounded-md text-sm p-2">
+                                    <option value="true" {% if subscription_status=='Active' %}selected{% endif %}>
+                                        Active</option>
+                                    <option value="false" {% if subscription_status=='Inactive' %}selected{% endif %}>
+                                        Inactive</option>
+                                </select>
+                            </div>
+
+                            <!-- Import Students -->
+                            <!-- <div>
+                                <label class="block text-sm text-gray-500 mb-1">Import Students</label>
+                                <div class="w-80">
+                                    <label for="file-input"
+                                        class="block w-full bg-gray-100 border border-gray-500 text-gray-500 text-center py-2 rounded-md cursor-pointer hover:bg-gray-200">
+                                        Browse File
+                                    </label>
+                                    <input type="file" id="file-input" name="file" accept=".xlsx" class="hidden"
+                                        onchange="showFileName()" />
+                                    <p id="file-name" class="mt-2 text-sm text-gray-600 truncate"></p>
+                                </div>
+                            </div>
+                            <div></div> -->
+
+                            <div></div>
+                            <!-- Buttons -->
+                            <div class="mt-8 flex gap-4">
+                                <button onclick="window.history.back()" type="button"
+                                    class="w-32 px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                                <button type="submit"
+                                    class="w-32 px-4 py-2 bg-cyan-500 text-white rounded">Submit</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </form>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div id="profilePicModal" class="flex fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-[90%] md:w-[400px] space-y-4 text-center">
+            <h2 class="text-xl font-semibold text-gray-700">Update Profile Picture</h2>
+
+            <!-- Form -->
+            <form id="uploadForm" action="/uploadProfilePicEditSubscriber" method="POST" enctype="multipart/form-data"
+                class="flex flex-col items-center space-y-4">
+                <input type="hidden" name="student_id" value="{{ student.student_id }}">
+
+                <!-- File input -->
+                <input type="file" name="image" accept="image/*" required class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full
+                          file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700
+                          hover:file:bg-cyan-100">
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col space-y-2 w-full">
+                    <button type="submit" class="bg-cyan-500 hover:bg-cyan-700 text-white py-2 rounded">
+                        Upload
+                    </button>
+                    <button id="removePicBtn" type="button" class="bg-red-500 text-white py-2 rounded">
+                        Remove
+                    </button>
+                    <button type="button" id="cancelModalBtn" class="border border-gray-400 text-gray-700 py-2 rounded">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function selectGender(gender) {
+            document.getElementById('gender').value = gender;
+            const activeClass = "w-32 px-4 py-2 rounded shadow border-0 bg-cyan-500 text-white font-normal";
+            const inactiveClass = "w-32 px-4 py-2 rounded shadow border-0 bg-white text-gray-500 font-normal";
+
+            document.getElementById('maleBtn').className = gender === 'M' ? activeClass : inactiveClass;
+            document.getElementById('femaleBtn').className = gender === 'F' ? activeClass : inactiveClass;
+        }
+
+        document.getElementById('editForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const data = {
+                student_id: document.getElementById('edit_id').value,
+                first_name: document.getElementById('edit_first_name').value,
+                last_name: document.getElementById('edit_last_name').value,
+                dob: document.getElementById('edit_dob').value,
+                // institution_id: document.getElementById('edit_institution').value,
+                contact_no: document.getElementById('edit_contact').value,
+                gender: document.getElementById('gender').value,
+                status: document.getElementById('edit_status').value === "true",
+                plan: document.getElementById('edit_plan').value,
+                subscription_id: document.getElementById('edit_subscription_id').value
+            };
+
+            fetch('/updateSubscriber', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        alert('Subscriber updated successfully');
+                        window.location.href = "/AdminSubscriberList";
+                    } else {
+                        alert(res.message || 'Update failed');
+                    }
+                });
+        });
+
+        // Profile pic scripts
+
+        document.getElementById("openProfilePicModal").addEventListener("click", () => {
+            document.getElementById("profilePicModal").classList.remove("hidden");
+        });
+
+        document.getElementById("cancelModalBtn").addEventListener("click", () => {
+            document.getElementById("profilePicModal").classList.add("hidden");
+        });
+
+        document.getElementById("removePicBtn").addEventListener("click", function () {
+            const studentId = "{{ student.student_id }}";
+
+            if (!confirm("Are you sure you want to remove the profile picture?")) return;
+
+            fetch(`/deleteProfilePic/${studentId}`, { method: 'DELETE' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("profilePicPreview").src = "{{ url_for('static', filename='images/staticprofile.png') }}";
+                        document.getElementById("profilePicModal").classList.add("hidden");
+                        alert("Profile picture removed.");
+                    } else {
+                        alert("Failed to remove profile picture.");
+                    }
+                })
+                .catch(error => {
+                    // console.error("Error:", error);
+                    alert("Error occurred while deleting.");
+                });
+        });
+
+    </script>
+</body>
+
+</html>

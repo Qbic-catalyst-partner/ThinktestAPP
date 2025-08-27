@@ -1,0 +1,200 @@
+<!--Accordion -->
+<div id="accordion-container" class="container pt-8 p-4">
+    <!-- Completed Section Header -->
+    <div class="container pb-2">
+        <div class="flex flex-col md:flex-row justify-between">
+            <h1 class="font-bold mt-2" style="color: var(--links-color);">Completed
+                ({{(custom_attempt_details_completed|default([])|length)}})</h1>
+        </div>
+    </div>
+
+    <!-- Completed Section Accordion -->
+    <div id="accordion-collapse" class="mt-4 overflow-y-auto space-y-4" data-accordion="collapse">
+        <div>
+            {% for attempt_id, attempt in custom_attempt_details_completed.items() %}
+            <h2 id="accordion-collapse-heading-{{ loop.index }}">
+                <button type="button"
+                    class="flex items-center rounded-lg shadow justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 gap-3 mb-4 bg-white"
+                    style="box-shadow: 0px 0px 4px 0px #00000040;"
+                    data-accordion-target="#accordion-collapse-body-{{ loop.index }}" aria-expanded="false"
+                    aria-controls="accordion-collapse-body-{{ loop.index }}">
+
+                    <span>{{ attempt.date }}</span>
+                    <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5 5 1 1 5" />
+                    </svg>
+                </button>
+            </h2>
+            <div id="accordion-collapse-body-{{ loop.index }}" class="hidden"
+                aria-labelledby="accordion-collapse-heading-{{ loop.index }}">
+                <div class="border border-gray-200 mb-4" style="border-top: none;">
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="flex flex-row justify-between items-center w-[70vw] mb-6">
+                            <h3 class="flex font-bold"> Test Id : {{ attempt_id }} | Score : {{attempt.score}} |
+                                Max
+                                Score: {{attempt.max_score}}</h3>
+                            <!-- <div class="flex flex-row gap-x-4 items-center">
+                                <button class="fa-regular fa-copy" id="fa-copy-completed"></button>
+                                <form method="POST" action="/delete_custom_attempt">
+                                    <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                                    <button type="submit" class="fa-solid fa-trash delete-row-btn"></button>
+                                </form>
+                            </div>
+                            <div id="viewReportButton-{{loop.index}}" class="viewReportButton"
+                                data-attempt-id="{{ attempt_id }}">
+                                <button id="navigateToReport"
+                                    class="mt-3 bg-white text-blue-600 border border-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg w-full"
+                                    style="border-color: var(--links-color); color: var(--links-color);">
+                                    View Report
+                                </button>
+                            </div> -->
+                        </div>
+                        <div class="relative overflow-x-auto w-[70vw]">
+                            <table class="w-full text-sm text-left text-gray-900">
+                                <thead class="text-xs text-gray-900 uppercase bg-gray-300">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">
+                                            Subject
+                                        </th>
+                                        <th scope="col" class="px-6 py-3">
+                                            Modules
+                                        </th>
+                                        <th scope="col" class="px-6 py-3">
+                                            Difficulty Level
+                                        </th>
+                                        <th scope="col" class="px-6 py-3">
+                                            Number of Questions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for config in attempt['configs'] %}
+                                    <tr class="bg-white border-b">
+                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                                            value="{{config.subject_id}}">
+                                            {{ config.subject_name }}
+                                        </th>
+                                        <td class="px-6 py-4" value="{{config.module_id}}">
+                                            {{ config.module_name }}
+                                        </td>
+                                        <td class="px-6 py-4" value="{{config.difficulty_level}}">
+                                            <span>
+                                                {{ config.difficulty_level }} - {{
+                                                difficulty_map[config.difficulty_level]
+                                                }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4" value="{{ config.question_count }}">
+                                            {{ config.question_count }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Incomplete Section Header -->
+    <div class="container pt-8 pb-2">
+        <div class="flex flex-row justify-between">
+            <h1 class="font-bold mt-2" style="color: var(--links-color);">Partially Completed
+                ({{(custom_attempt_details_incomplete|default([])|length)}})</h1>
+        </div>
+    </div>
+
+    <!-- Incomplete Section Accordion -->
+    <div id="accordion-collapse" class="mt-4 overflow-y-auto space-y-4" data-accordion="collapse">
+        <div>
+            {% for attempt_id, attempt in custom_attempt_details_incomplete.items() %}
+            <h2 id="accordion-collapse-heading-{{ loop.index }}">
+                <button type="button"
+                    class="flex items-center rounded-lg shadow justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 gap-3 mb-4 bg-white"
+                    style="box-shadow: 0px 0px 4px 0px #00000040;"
+                    data-accordion-target="#accordion-collapse-body-incomplete-{{ loop.index }}" aria-expanded="false"
+                    aria-controls="accordion-collapse-body-incomplete-{{ loop.index }}">
+
+                    <span>{{ attempt.date }}</span>
+                    <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5 5 1 1 5" />
+                    </svg>
+                </button>
+            </h2>
+            <div id="accordion-collapse-body-incomplete-{{ loop.index }}" class="hidden"
+                aria-labelledby="accordion-collapse-heading-{{ loop.index }}">
+                <div class="border border-gray-200 mb-4" style="border-top: none;">
+                    <div class="flex flex-col items-center mb-4">
+                        <div class="flex flex-row justify-between items-center w-[70vw] mb-6">
+                            <h3 class="flex font-bold"> Test Id : {{ attempt_id }}</h3>
+                            <!-- <div class="flex flex-row gap-x-4 items-center">
+                                <button class="fa-regular fa-copy" id="fa-copy-incomplete"></button>
+                                <form method="POST" action="/delete_custom_attempt">
+                                    <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                                    <button type="submit" class="fa-solid fa-trash delete-row-btn"></button>
+                                </form>
+                            </div>
+                            <form action="{{ url_for('customModuleTest') }}" method="POST">
+                                <input type="hidden" name="attempt_id" value="{{ attempt_id }}">
+                                <button type="submit" class="text-white font-medium rounded-lg py-2 px-4"
+                                    style="background-color: var(--links-color);">
+                                    Continue
+                                </button>
+                            </form> -->
+                        </div>
+                        <div class="relative overflow-x-auto w-[70vw]">
+                            <table class="w-full text-sm text-left text-gray-900">
+                                <thead class="text-xs text-gray-900 uppercase bg-gray-300">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3">
+                                            Subject
+                                        </th>
+                                        <th scope="col" class="px-6 py-3">
+                                            Modules
+                                        </th>
+                                        <th scope="col" class="px-6 py-3">
+                                            Difficulty Level
+                                        </th>
+                                        <th scope="col" class="px-6 py-3">
+                                            Number of Questions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for config in attempt['configs'] %}
+                                    <tr class="bg-white border-b">
+                                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                                            value="{{config.subject_id}}">
+                                            {{ config.subject_name }}
+                                        </th>
+                                        <td class="px-6 py-4" value="{{config.module_id}}">
+                                            {{ config.module_name }}
+                                        </td>
+                                        <td class="px-6 py-4" value="{{config.difficulty_level}}">
+                                            <span>
+                                                {{ config.difficulty_level }} - {{
+                                                difficulty_map[config.difficulty_level]}}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4" value="{{ config.question_count }}">
+                                            {{ config.question_count }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+<!-- Ensure your body has full height -->
+<body class="flex min-h-screen">
+
+    <!-- Sidebar Wrapper -->
+    <div id="sidebar-wrapper" class="relative">
+    
+        <!-- Toggle Button -->
+        <button id="toggleSidebar"
+            class="absolute left-32 top-4 z-20 p-2 bg-cyan-500 rounded-full transition-all duration-300">
+            <svg id="arrowIcon" class="w-5 h-5 text-white rotate-180 transition-transform duration-300" fill="none"
+                stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    
+        <!-- Sidebar -->
+        <nav id="sidebar"
+            class="flex flex-col min-h-screen w-32 items-center justify-between bg-white shadow-xl transition-all duration-300 ease-in-out overflow-x-hidden">
+    
+            <!-- Top: Logo -->
+            <div class="p-4">
+                <img src="../static/images/logo.svg" alt="Logo" class="w-[90%] h-[80%] xl:w-[100%] h-[100%]">
+            </div>
+    
+            <!-- Middle: Navigation Links -->
+            <div class="flex flex-col gap-4 items-center flex-grow justify-center w-full px-2">
+                {% set nav_items = [
+                    ('adminDashboard', 'Dashboard.svg', 'Dashboard'),
+                    ('adminSubscriberList', 'Subscribers.svg', 'Subscribers'),
+                    ('adminInstitutionList', 'Institutions.svg', 'Institutions'),
+                    ('adminQuestionList', 'Questions.svg', 'Questions'),
+                    ('adminSubjectList', 'Subjects.svg', 'Subjects'),
+                    ('adminModuleList', 'CustomModule.svg', 'Modules'),
+                    ('adminCategoryList', 'Categories.svg', 'Categories'),
+                    ('adminExamList', 'ExamInfo.svg', 'Exams'),
+                    ('adminMockExamList', 'MockTest.svg', 'Mock Exams'),
+                ] %}
+                {% for route, icon, title in nav_items %}
+                <a href="{{ url_for(route) }}" class="hover:bg-gray-200 p-2 rounded w-full flex justify-center"
+                    title="{{ title }}">
+                    <img src="{{ url_for('static', filename='../static/images/SideNavBar/' ~ icon) }}" alt="{{ title }}"
+                        class="w-6 h-6 2xl:w-8 2xl:h-8">
+                </a>
+                {% endfor %}
+            </div>
+    
+            <!-- Bottom: Logout -->
+            <div class="flex flex-col items-center flex-grow justify-center w-full px-2">
+                <a href="/logout" id="logout-button" class="hover:bg-gray-200 p-2 rounded w-full flex justify-center" title="Logout">
+                    <img src="{{ url_for('static', filename='../static/images/SideNavBar/Logout.svg') }}" alt="Logout"
+                        class="w-6 h-6 2xl:w-8 2xl:h-8">
+                </a>
+            </div>
+    
+        </nav>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebar = document.getElementById("sidebar");
+            const toggleButton = document.getElementById("toggleSidebar");
+            const arrowIcon = document.getElementById("arrowIcon");
+    
+            toggleButton.addEventListener("click", () => {
+                const currentWidth = getComputedStyle(sidebar).width;
+    
+                if (currentWidth === "0px") {
+                    sidebar.style.width = "8rem";
+                    toggleButton.style.left = "8rem";
+                    arrowIcon.classList.remove("rotate-180");
+                } else {
+                    sidebar.style.width = "0";
+                    toggleButton.style.left = "0";
+                    arrowIcon.classList.add("rotate-180");
+                }
+            });
+        });
+    </script>
+    

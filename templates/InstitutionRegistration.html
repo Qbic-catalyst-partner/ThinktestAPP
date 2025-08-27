@@ -1,0 +1,781 @@
+<!-- Institution Registration.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .font {
+            font-family: "Inter", sans-serif;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            /* Align directly below the button */
+            left: 0;
+            /* Align with the button's left edge */
+            z-index: 50;
+            /* Ensure it appears above other elements */
+            background-color: white;
+            border: 1px solid #d1d5db;
+            /* Tailwind's gray-300 */
+            border-radius: 0.5rem;
+            /* Tailwind's rounded-lg */
+            width: 100%;
+            /* Match button width */
+            display: none;
+            /* Initially hidden */
+        }
+
+        .dropdown-content.show {
+            display: block;
+            /* Show when dropdown is active */
+        }
+    body,
+    .font-sans {
+        font-family: 'Inter', sans-serif !important;
+    }
+</style>
+</head>
+
+<body class="bg-gradient-to-b from-[#0ABDDB] to-white font-inter">
+    <div class="flex flex-1 w-full">
+        <!-- <div class="flex w-full"> -->
+        <!-- First div for image -->
+        <div class="bg-gradient-to-b from-[#0ABDDB99] to-[#FFFFFF99] hidden lg:block">
+            <img src="{{ url_for('static', filename='images/registration-img.jpg') }}" alt="Study Image"
+                class="object-cover opacity-60 lg:h-[100vh] lg:w-full">
+        </div>
+        <!-- Second div for registration form -->
+        <div class="flex-1 items-center justify-center rounded-lg bg-white shadow-lg m-10 p-10">
+            <div class="flex items-center justify-center mb-2 md:mb-6 lg:mb-4">
+                <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+            </div>
+            <h2 class="text-sm md:text-2xl lg:text-2xl font-bold mb-0 md:mb-6 lg:mb-4">Register here</h2>
+            <form id="registrationForm" action="/proceedInstitutionRegistration" method="POST" class="mt-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="lg:col-span-2">
+                        <label class="block mb-1 text-xs md:text-sm lg:text-sm font-medium">Institution Name</label>
+                        <input type="text" name="institution_name"
+                            class="w-full h-12 border border-gray-300 rounded-lg px-4 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter Your Institution Name" required>
+                    </div>
+
+                    <div id="mobileSection">
+                        <label for="phone" class="block mb-1 text-xs md:text-sm lg:text-sm font-medium">Contact
+                            Number</label>
+                        <input type="tel" id="phone" name="phone"
+                            class="w-full h-12 border border-gray-300 rounded-lg px-4 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter Your Contact Number" required pattern="[6-9][0-9]{9}"
+                            title="Phone number must start with 6, 7, 8, or 9 and be 10 digits long." required>
+                        <a href="#" id="sendMobileOtpButton" class="text-blue-500 text-sm"
+                            onclick="sendMobileOtp(event)">Verify OTP</a>
+                        <p class="hidden text-green-700 text-xs md:text-sm lg:text-sm">Phone OTP Verified</p>
+                    </div>
+
+                    <div id="emailSection">
+                        <label for="email" class="block mb-1 text-xs md:text-sm lg:text-sm font-medium">Email
+                            Address</label>
+                        <input type="email" id="email" name="email"
+                            class="w-full h-12 border border-gray-300 rounded-lg px-4 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="example@gmail.com" required
+                            pattern="[a-zA-Z0-9._%+-]+@(gmail\.com|outlook\.com)"
+                            title="Email must end with @gmail.com or @outlook.com" required>
+                        <a href="#" id="sendOtpButton" class="text-blue-500 text-sm" onclick="sendOtp(event)">Verify
+                            OTP</a>
+                        <p id="otpVerifiedMessage" class="hidden text-green-700 text-xs md:text-sm lg:text-sm">Email OTP
+                            Verified</p>
+                    </div>
+
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Password</label>
+                        <input type="password" name="password" id="password" placeholder="Password"
+                            class="w-full h-12 border border-gray-300 rounded-lg px-4 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Confirm Password</label>
+                        <input type="password" id="confirm_password" placeholder="Confirm Password"
+                            class="w-full h-12 border border-gray-300 rounded-lg px-4 focus:ring-blue-500 focus:border-blue-500"
+                            required>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button type="submit" id="proceedButton"
+                        class="bg-cyan-500 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 focus:ring focus:ring-cyan-500">Proceed</button>
+                </div>
+            </form>
+        </div>
+        <!-- </div> -->
+    </div>
+
+    <!-- Enter OTP Modal -->
+    <div id="otp-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%]">
+            <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='images/otp-img.svg') }}" alt="" width="64" height="64"
+                    style="align-self: center; margin-left: 15vw; padding-bottom: 3vh" />
+                <h2 class="text-2xl font-semibold">Please Check Your Email</h2>
+                <p class="text-gray-600">We have sent a code to: <span id="email-display"></span></p>
+            </div>
+            <form id="otp-form">
+                <div class="mb-4 input-container">
+                    <label class="block py-2 ml-16 pb-4 pt-4 text-xl font-semibold">Enter OTP</label>
+                    <div class="flex justify-center space-x-8">
+                        <input type="text" name="otp1"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp2"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp3"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp4"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp5"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp6"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                    </div>
+                    <div id="otp-error" class="text-center text-red-500 font-semibold mt-2 hidden">Invalid OTP. Please
+                        try again.</div>
+                </div>
+                <div class="flex justify-center pt-4 space-x-32 pb-4">
+                    <button type="button" onclick="closeOtpModal()" id="otp-model-close-btn"
+                        class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+                        style="width:180px; height: 46px; color: #0ABDDB;">Cancel</button>
+                    <button id="otp-button" type="submit"
+                        class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+                        style="width:180px; height: 46px; background-color: #0ABDDB;">Verify</button>
+                </div>
+                <div id="countdown-timer" class="text-center text-lg font-semibold text-gray-600 mt-4"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ENTER PHONE OTP MODAL -->
+    <div id="phone-otp-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%]">
+            <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='images/otp-img.svg') }}" alt="" width="64" height="64"
+                    style="align-self: center; margin-left: 15vw; padding-bottom: 3vh" />
+                <h2 class="text-2xl font-semibold">Please Check Your Message</h2>
+                <p class="text-gray-600">We have sent a code to: <span id="message-display"></span></p>
+            </div>
+            <form id="phone-otp-form">
+                <div class="mb-4 input-container">
+                    <label class="block py-2 ml-16 pb-4 pt-4 text-xl font-semibold">Enter OTP</label>
+                    <div class="flex justify-center space-x-8">
+                        <input type="text" name="otp1"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp2"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp3"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp4"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp5"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                        <input type="text" name="otp6"
+                            class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg"
+                            maxlength="1" required />
+                    </div>
+                    <div id="phone-otp-error" class="text-center text-red-500 font-semibold mt-2 hidden">Invalid OTP.
+                        Please try again.</div>
+                </div>
+                <div class="flex justify-center pt-4 space-x-32 pb-4">
+                    <button type="button" onclick="closeOtpModal()" id="otp-model-close-btn"
+                        class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+                        style="width:180px; height: 46px; color: #0ABDDB;">Cancel</button>
+                    <button id="phone-otp-button" type="submit"
+                        class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+                        style="width:180px; height: 46px; background-color: #0ABDDB;">Verify</button>
+                </div>
+                <div id="phone-countdown-timer" class="text-center text-lg font-semibold text-gray-600 mt-4"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Message Modal -->
+    <div id="success-message-modal"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[35%]">
+            <div class="text-center mb-6">
+                <img class="ml-[12.3vw] pb-6" src="{{ url_for('static', filename='images/tick.svg') }}" alt=""
+                    width="95" height="95">
+                <h2 class="text-2xl font-semibold pb-2">Successful</h2>
+                <p class="text-gray-600">Email ID Verified Successfully!</p>
+            </div>
+            <div class="flex justify-center pt-8 pb-4">
+                <button id="close-success-msg-modal-btn" type="button"
+                    class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+                    style="width:200px; height: 46px; color: var(--links-color);">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!--Phone Success Message Modal -->
+    <div id="phone-success-message-modal"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[35%]">
+            <div class="text-center mb-6">
+                <img class="ml-[12.3vw] pb-6" src="{{ url_for('static', filename='images/tick.svg') }}" alt=""
+                    width="95" height="95">
+                <h2 class="text-2xl font-semibold pb-2">Successful</h2>
+                <p class="text-gray-600">Phone Verified Successfully!</p>
+            </div>
+            <div class="flex justify-center pt-8 pb-4">
+                <button id="close-phone-success-msg-modal-btn" type="button"
+                    class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+                    style="width:200px; height: 46px; color: var(--links-color);">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Already Registered Modal -->
+    <div id="email-already-registered-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%] text-center">
+            <div class="mb-4">
+                <i class="fas fa-exclamation-circle text-red-600 text-3xl mb-4"></i>
+                <h2 class="text-xl font-semibold">Email Already Registered</h2>
+                <p class="text-gray-600">The email address you entered is already registered. Please try another one.
+                </p>
+            </div>
+            <button id="close-email-error-modal"
+                class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+                style="width:180px; height: 46px; background-color: #0ABDDB;">OK</button>
+        </div>
+    </div>
+
+    <!-- Phone Already Registered Modal -->
+    <div id="phone-already-registered-modal"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%] text-center">
+            <div class="mb-4">
+                <i class="fas fa-exclamation-circle text-red-600 text-3xl mb-4"></i>
+                <h2 class="text-xl font-semibold">Phone Number already Registered</h2>
+                <p class="text-gray-600">The Phone Number you entered is already registered. Please try another one.</p>
+            </div>
+            <button id="close-phone-error-modal"
+                class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+                style="width:180px; height: 46px; background-color: #0ABDDB;">OK</button>
+        </div>
+    </div>
+
+    <!-- Email not verified Modal -->
+    <div id="otp-error-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%]">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold">Error</h2>
+                <p class="text-gray-600" id="otp-error-message">Email ID is not verified</p>
+            </div>
+            <div class="flex justify-center mt-4">
+                <button type="button" id="close-otp-error-modal"
+                    class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+                    style="width:180px; height: 46px; color:#0ABDDB;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phone not verified Modal -->
+    <div id="phone-otp-error-modal"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%]">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold">Error</h2>
+                <p class="text-gray-600" id="phone-otp-error-message">Phone number is not verified</p>
+            </div>
+            <div class="flex justify-center mt-4">
+                <button type="button" id="close-phone-otp-error-modal"
+                    class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+                    style="width:180px; height: 46px; color:#0ABDDB;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sendMobileOtp(event) {
+            event.preventDefault();
+            const phoneInput = document.getElementById('phone');
+            const phoneNumber = phoneInput.value;
+
+            if (!phoneInput.checkValidity()) {
+                phoneInput.reportValidity();
+                return;
+            }
+
+            fetch('/check_phone', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ phone: phoneNumber })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success === false) {
+                        // Show "Phone Number Already Registered" modal
+                        document.getElementById('phone-already-registered-modal').classList.remove('hidden');
+                    } else {
+                        // Proceed to send OTP
+                        fetch('/sendMobileOTP', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ phone: phoneNumber })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    // Open OTP Modal and set phone number display
+                                    document.getElementById('phone-otp-modal').classList.remove('hidden');
+                                    document.getElementById('message-display').textContent = phoneNumber;
+                                    startPhoneCountdown();
+                                } else {
+                                    alert('Failed to send OTP. Please try again.');
+                                }
+                            })
+                            .catch(error => {
+                                // console.error('Error:', error);
+                            });
+                    }
+                })
+                .catch(error => {
+                    // console.error('Error:', error);
+                });
+        }
+
+        function verifyMobileOTP(event) {
+            event.preventDefault();
+
+            // Collect OTP values
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+
+            // Validate OTP length
+            if (otp.length !== 6) {
+                document.getElementById('phone-otp-error').classList.remove('hidden');
+                return;
+            }
+
+            const phoneNumber = document.getElementById('message-display').textContent;
+
+            fetch('/verifyMobileOTP', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ phone: phoneNumber, otp: otp })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Show success modal and close OTP modal
+                        document.getElementById('phone-otp-modal').classList.add('hidden');
+                        document.getElementById('phone-success-message-modal').classList.remove('hidden');
+
+                        // Hide the "Verify OTP" button and show "OTP Verified" message
+                        document.getElementById('sendMobileOtpButton').classList.add('hidden');
+                        document.querySelector('#mobileSection p').classList.remove('hidden');
+                    } else {
+                        // Show error in OTP modal
+                        const phoneOtpError = document.getElementById('phone-otp-error');
+                        phoneOtpError.classList.remove('hidden');
+                        setTimeout(() => {
+                            phoneOtpError.classList.add('hidden');
+                        }, 5000);
+                    }
+                })
+                .catch(error => {
+                    // console.error('Error:', error);
+                });
+        }
+
+        // Function to resend Phone OTP   
+        function resendMobileOtp(event) {
+            event.preventDefault();
+            const phoneInput = document.getElementById('phone');
+            const phoneNumber = phoneInput.value;
+
+            if (!phoneInput.checkValidity()) {
+                phoneInput.reportValidity();
+                return;
+            }
+
+            fetch('/sendMobileOTP', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phoneNumber })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('phone-otp-button').textContent = 'Verify';
+                    document.getElementById('phone-otp-button').onclick = null;
+                    document.getElementById('phone-otp-form').addEventListener('submit', verifyMobileOTP);
+                    startPhoneCountdown();
+                    document.getElementById('phone-otp-error').classList.add('hidden');  // Hide the error message if OTP is resent
+                });
+        }
+
+        // Countdown timer
+        let mobileCountdownTimer;
+        function startPhoneCountdown() {
+            let timeLeft = 120;
+            const timerDisplay = document.getElementById('phone-countdown-timer');
+            timerDisplay.textContent = `Resend OTP: ${timeLeft}`;
+
+            mobileCountdownTimer = setInterval(() => {
+                timeLeft -= 1;
+                if (timeLeft <= 0) {
+                    clearInterval(mobileCountdownTimer);
+                    document.getElementById('phone-otp-error').classList.add('hidden');
+                    document.getElementById('phone-otp-button').textContent = 'Resend OTP';
+                    document.getElementById('phone-otp-button').onclick = resendMobileOtp;
+                    document.getElementById('phone-countdown-timer').textContent = '';
+                    clearOtpInputs();  // Clear the OTP input fields
+                } else {
+                    timerDisplay.textContent = `Resend OTP: ${timeLeft}`;
+                }
+            }, 1000);
+        }
+
+        // Clear OTP input fields
+        function clearOtpInputs() {
+            const inputs = document.querySelectorAll('.otp-input');
+            inputs.forEach(input => input.value = '');
+            inputs[0].focus();  // Focus on the first input
+        }
+
+        function closeOtpModal() {
+            document.getElementById('phone-otp-modal').classList.add('hidden');
+        }
+
+        function closeSuccessMsgModal() {
+            document.getElementById('phone-success-message-modal').classList.add('hidden');
+        }
+
+        // Attach event listener for OTP form submission
+        document.getElementById('phone-otp-form').addEventListener('submit', verifyMobileOTP);
+
+        // Attach event listener for closing success message modal
+        document.getElementById('close-phone-success-msg-modal-btn').addEventListener('click', closeSuccessMsgModal);
+
+        document.getElementById('close-phone-error-modal').addEventListener('click', function () {
+            document.getElementById('phone-already-registered-modal').classList.add('hidden');
+        });
+
+        // Close Phone not Verified Model
+        document.getElementById('close-phone-otp-error-modal').addEventListener('click', function () {
+            document.getElementById('phone-otp-error-modal').classList.add('hidden');
+        });
+
+        // Call the function to show flash messages on page load
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     showFlashMessages();
+        // });
+
+        var password = document.getElementById("password")
+        var confirm_password = document.getElementById("confirm_password");
+
+        function validatePassword() {
+            if (password.value != confirm_password.value) {
+                confirm_password.setCustomValidity("Passwords Don't Match");
+            } else {
+                confirm_password.setCustomValidity('');
+            }
+        }
+
+        password.onchange = validatePassword;
+        confirm_password.onkeyup = validatePassword;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Function to show the OTP modal
+            function showOtpModal(email) {
+                document.getElementById('otp-modal').classList.remove('hidden');
+                document.getElementById('email-display').textContent = email;
+            }
+
+            // Function to close the OTP modal
+            function closeOtpModal() {
+                document.getElementById('otp-modal').classList.add('hidden');
+                clearInterval(countdownTimer);
+                document.getElementById('otp-button').textContent = 'Verify';
+                document.getElementById('otp-button').onclick = null;
+                document.getElementById('otp-form').removeEventListener('submit', verifyOtp);
+                document.getElementById('countdown-timer').textContent = '';
+                document.getElementById('otp-error').classList.add('hidden');
+            }
+
+            // Function to show the success message modal
+            function showSuccessMessage() {
+                document.getElementById('success-message-modal').classList.remove('hidden');
+            }
+
+            // Countdown timer
+            let countdownTimer;
+            function startCountdown() {
+                let timeLeft = 120;
+                const timerDisplay = document.getElementById('countdown-timer');
+                timerDisplay.textContent = `Resend OTP: ${timeLeft}`;
+
+                countdownTimer = setInterval(() => {
+                    timeLeft -= 1;
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownTimer);
+                        document.getElementById('otp-button').textContent = 'Resend OTP';
+                        document.getElementById('otp-button').onclick = resendOtp;
+                        document.getElementById('countdown-timer').textContent = '';
+                        clearOtpInputs();  // Clear the OTP input fields
+                    } else {
+                        timerDisplay.textContent = `Resend OTP: ${timeLeft}`;
+                    }
+                }, 1000);
+            }
+
+            // Clear OTP input fields
+            function clearOtpInputs() {
+                const inputs = document.querySelectorAll('.otp-input');
+                inputs.forEach(input => input.value = '');
+                inputs[0].focus();  // Focus on the first input
+            }
+
+            // Function to check if email is registered
+            function checkEmail(email, callback) {
+                fetch('/check_email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                })
+                    .then(response => {
+                        // consolelog('Received response:', response);
+                        return response.json();
+                    })
+                    .then(data => {
+                        // consolelog('Parsed JSON:', data);
+                        callback(data); // this triggers the inner function in sendOtp
+                    })
+                    .catch(error => {
+                        // console.error('Error in checkEmail:', error);
+                    });
+            }
+
+            // Function to send OTP
+            function sendOtp(event) {
+                event.preventDefault();
+                const email = document.getElementById('email').value;
+                // consolelog('sendOtp triggered for:', email);
+
+                checkEmail(email, function (data) {
+                    // consolelog('Callback from checkEmail received data:', data);
+
+                    if (data.success) {
+                        // consolelog('Email already registered. Showing modal.');
+                        showEmailAlreadyRegisteredModal();
+                    } else {
+                        // consolelog('Email not registered. Sending OTP...');
+                        fetch('/send_otp', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                // consolelog('OTP send response:', data);
+                                if (data.success) {
+                                    showOtpModal(email);
+                                    startCountdown();
+                                } else {
+                                    alert(data.message || 'An error occurred.');
+                                }
+                            })
+                            .catch(err => {
+                                // console.error('Error sending OTP:', err);
+                            });
+                    }
+                });
+            }
+
+            // Function to close the enter otp modal
+            document.getElementById('otp-model-close-btn').addEventListener('click', function () {
+                document.getElementById('otp-modal').classList.add('hidden');
+            });
+
+            // Function to show the email already registered modal
+            function showEmailAlreadyRegisteredModal() {
+                document.getElementById('email-already-registered-modal').classList.remove('hidden');
+            }
+
+            function showPhoneAlreadyRegisteredModal() {
+                document.getElementById('phone-already-registered-modal').classList.remove('hidden');
+            }
+
+            // Function to close the email already registered modal
+            document.getElementById('close-email-error-modal').addEventListener('click', function () {
+                document.getElementById('email-already-registered-modal').classList.add('hidden');
+            });
+
+            // Function to close success message modal
+            document.getElementById('close-success-msg-modal-btn').addEventListener('click', function () {
+                document.getElementById('success-message-modal').classList.add('hidden');
+                document.getElementById('sendOtpButton').classList.add('hidden');
+                document.querySelector('#emailSection p').classList.remove('hidden');
+            });
+
+            // Function to resend OTP   
+            function resendOtp(event) {
+                event.preventDefault();
+                const email = document.getElementById('email').value;
+                fetch('/send_otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('otp-button').textContent = 'Verify';
+                            document.getElementById('otp-button').onclick = null;
+                            document.getElementById('otp-form').addEventListener('submit', verifyOtp);
+                            startCountdown();
+                            document.getElementById('otp-error').classList.add('hidden');  // Hide the error message if OTP is resent
+                        } else {
+                            alert(data.error || 'An error occurred.');
+                        }
+                    });
+            }
+
+            // Function to verify OTP
+            function verifyOtp(event) {
+                event.preventDefault();
+                const form = event.target;
+                const otp = Array.from(form.elements).slice(0, 6).map(input => input.value).join('');
+                const email = document.getElementById('email').value;
+                fetch('/verify_otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            closeOtpModal();
+                            showSuccessMessage();
+                        } else {
+                            const otpError = document.getElementById('otp-error');
+                            otpError.classList.remove('hidden');
+                            setTimeout(() => {
+                                otpError.classList.add('hidden');
+                            }, 5000);  // Hide the error message after 5 seconds
+                        }
+                    });
+            }
+
+            // Function to handle OTP input behavior
+            function handleOtpInput(event) {
+                const input = event.target;
+                if (input.nextElementSibling && input.value) {
+                    input.nextElementSibling.focus();  // Move to the next input field
+                }
+            }
+
+            // Attach event listeners
+            document.getElementById('sendOtpButton').addEventListener('click', sendOtp);
+            document.getElementById('otp-form').addEventListener('submit', verifyOtp);
+
+            // Add event listener to OTP inputs for automatic cursor movement
+            document.querySelectorAll('.otp-input').forEach(input => {
+                input.addEventListener('input', handleOtpInput);
+            });
+        });
+
+        document.getElementById('close-otp-error-modal').addEventListener('click', function () {
+            document.getElementById('otp-error-modal').classList.add('hidden');
+        });
+
+        // Function to check email verification status
+        function checkEmailVerification(email) {
+            return fetch('/check_verification_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email })
+            }).then(response => response.json());
+        }
+
+        // Function to check phone verification status
+        function checkPhoneVerification(phone) {
+            return fetch('/check_phone_verification_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ phone: phone })
+            }).then(response => response.json());
+        }
+
+        document.getElementById('registrationForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            // Check phone verified
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value;
+            // Check email verified
+            const phoneInput = document.getElementById('phone');
+            const phone = phoneInput.value;
+
+            Promise.all([checkEmailVerification(email), checkPhoneVerification(phone)])
+                .then(([emailData, phoneData]) => {
+                    if (emailData.verified && phoneData.verified) {
+                        // Submit the form if both verifications are successful
+                        document.getElementById('registrationForm').submit();
+                    } else {
+                        // Show appropriate error modals
+                        if (!emailData.verified) {
+                            document.getElementById('otp-error-modal').classList.remove('hidden');
+                        }
+                        if (!phoneData.verified) {
+                            document.getElementById('phone-otp-error-modal').classList.remove('hidden');
+                        }
+                    }
+                })
+                .catch(error => {
+                    // console.error('Error during verification:', error);
+                });
+
+        });     
+    </script>
+</body>
+
+</html>

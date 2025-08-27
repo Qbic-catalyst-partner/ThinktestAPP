@@ -1,0 +1,99 @@
+<style>
+  @media print {
+    .bg-gray-200 {
+      background-color: #e5e7eb !important;
+      /* Equivalent to Tailwind's bg-gray-200 */
+      -webkit-print-color-adjust: exact;
+      /* Ensures colors appear in print */
+      print-color-adjust: exact;
+    }
+
+    /* Additional styles for print if needed */
+    body {
+      background: white;
+    }
+
+    /* Ensure text visibility */
+    .text-gray-700 {
+      color: #374151 !important;
+      /* Adjust text color for print */
+    }
+
+    .text-black {
+      color: black !important;
+    }
+  }
+
+  body,
+  .font-sans {
+    font-family: 'Inter', sans-serif !important;
+  }
+</style>
+
+
+{% for solution in solutions %}
+<div class="text-left">
+  <h2 class="font-semibold text-l pt-4" style="color: var(--links-color);"> Question: {{ solution.q_order }}/{{
+    all_sections['Total_Questions'] if all_sections is defined else total_questions | default(0)}}:
+    {% if solution.response == 'correct' %}
+    <span class="pl-4" style="color: green;">Correct</span>
+    {% elif solution.response == 'incorrect' %}
+    <span class="pl-4" style="color: red;">Incorrect</span>
+    {% else %}
+    <span class="pl-4" style="color: #ffbd2e;">Skipped</span>
+    {% endif %}
+  </h2>
+
+  <div class="bg-gray-200 p-4 mt-4">
+    <h1 class="font-semibold text-l" style="color: var(--links-color);">Description</h1>
+
+    <p class="pt-4">
+      {{ solution.question_description }}
+    </p>
+  </div>
+
+  <br>
+
+  <div class="bg-gray-200 mt-2">
+    <p class="p-4">
+      {{ solution.solution_explanation }}
+    </p>
+  </div>
+
+  <!-- <div class="flex-col pt-4 text-base">
+    {% for option, answer in solution.answer_options.items() %}
+    <p>
+      {{ option }}. {{ answer }}
+
+      {% if option in solution.correct_option %}
+      <i class="fa-solid fa-check" style="color: green;"></i>
+
+      {% elif option in solution.selected_option %}
+      <i class="fa-solid fa-xmark" style="color: red;"></i>
+      {% endif %}
+    </p>
+    {% endfor %}
+  </div> -->
+
+  <div class="flex-col pt-4 text-base">
+    {% for option, answer in solution.answer_options.items() %}
+    <p>
+      {{ option }}.
+      {% if solution['choice_type'] == 'image' %}
+      <img src="{{ answer }}" alt="Option {{ option }}"
+        class="inline-block w-32 h-32 rounded shadow border border-gray-300" />
+      {% else %}
+      {{ answer }}
+      {% endif %}
+
+      {% if option in solution.correct_option %}
+      <i class="fa-solid fa-check ml-2" style="color: green;"></i>
+      {% elif option in solution.selected_option %}
+      <i class="fa-solid fa-xmark ml-2" style="color: red;"></i>
+      {% endif %}
+    </p>
+    {% endfor %}
+  </div>
+
+</div>
+{% endfor %}

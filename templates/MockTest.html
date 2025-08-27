@@ -1,0 +1,886 @@
+<!-- mock_test.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MockTest</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .custom-shadow {
+            box-shadow: 0px 4px 4px 0px #00000040;
+        }
+
+        .font {
+            font-family: "Inter", sans-serif;
+        }
+
+        .content {
+            width: 95%;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar {
+            width: 5%;
+            transition: width 0.3s ease;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            background-color: #0EC1DD;
+            padding: 0 0.5rem;
+        }
+
+        .sidebar-expanded {
+            align-items: flex-start;
+            background-color: white;
+            transition: width 0.3s ease;
+            /* Smooth transition for width change */
+        }
+
+        @media (min-width: 1024px) {
+
+            /* Large screens */
+            .sidebar-expanded {
+                width: 20%;
+                /* 20% width on larger screens */
+            }
+
+            .content-expanded {
+                width: 80%;
+            }
+
+        }
+
+        @media (min-width: 768px) and (max-width: 1023px) {
+
+            /* Medium screens */
+            .sidebar-expanded {
+                width: 30%;
+                /* 30% width on medium screens */
+            }
+
+            .content-expanded {
+                width: 70%;
+            }
+
+        }
+
+        @media (max-width: 767px) {
+
+            /* Small screens */
+            .sidebar-expanded {
+                width: 80%;
+                /* Occupy almost the full screen on small screens */
+            }
+
+            .content-expanded {
+                width: 20%;
+            }
+
+        }
+
+        .hidden-content {
+            display: none;
+        }
+
+        .hidden-content.show {
+            display: block;
+        }
+
+        .toggle-icon {
+            color: white;
+            position: absolute;
+            transition: top 0.3s ease, transform 0.3s ease;
+        }
+
+        .sidebar .toggle-icon {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .sidebar-expanded .toggle-icon {
+            top: 18px;
+            left: auto;
+            right: 10px;
+            transform: translate(0, 0);
+        }
+
+        .legend {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 20%;
+        }
+
+        .question-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .question-status {
+            width: 15px;
+            height: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 20%;
+        }
+
+        .answered {
+            background-color: #28A745;
+        }
+
+        .not_answered {
+            background-color: #DC3545;
+        }
+
+        .marked_for_review {
+            background-color: #FFC107;
+        }
+
+        .not_attempted {
+            background-color: white;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: white;
+            box-shadow: 0px 4px 4px 0px #00000040;
+        }
+
+        .popup.show {
+            display: block;
+        }
+
+        .scrollable-list {
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 0 20px;
+            width: 100%;
+            margin-right: 50px;
+
+            scroll-behavior: smooth;
+        }
+
+        .scrollable-list div {
+            margin: 4px 0;
+        }
+
+        .scrollable-list::-webkit-scrollbar {
+            width: 4px;
+            /* Width of the scrollbar */
+        }
+
+        .scrollable-list::-webkit-scrollbar-track {
+            background: white;
+            /* Background of the scrollbar track */
+        }
+
+        .scrollable-list::-webkit-scrollbar-thumb {
+            background: #0EC1DD;
+            /* Color of the scrollbar handle */
+            border-radius: 10px;
+            /* Roundness of the scrollbar handle */
+        }
+
+        .scrollable-list::-webkit-scrollbar-thumb:hover {
+            background: #067E90;
+            /* Color of the scrollbar handle on hover */
+        }
+
+        body,
+        .font-sans {
+            font-family: 'Inter', sans-serif !important;
+        }
+    </style>
+</head>
+
+<body class="font">
+    <nav class="bg-white h-[78px] custom-shadow flex items-center justify-between px-4 sm:px-20">
+        <div class="flex items-center">
+            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Brand Logo"
+                class="w-[120px] sm:w-[150px] h-auto">
+        </div>
+        <div class="flex items-center space-x-8">
+            <div class="text-lg font-medium flex items-center space-x-2">
+                <span>Time Left -</span>
+                <span id="exam_duration" class="hidden">{{resume_seconds}}</span>
+                <span id="timer" class="text-red-500"></span>
+            </div>
+            <img src="{{ profile_pic_url }}" alt="Profile"
+                class="w-8 h-8 rounded-full object-cover border border-gray-300">
+        </div>
+    </nav>
+
+    <div class="flex items-stretch content-between justify-between my-12 ml-4 mr-2">
+        <div id="content" class="content">
+            {% for question in questions %}
+            <div class="question-item {% if not loop.first %}hidden{% endif %}" id="question-{{ loop.index }}">
+                <p class="question_id hidden">{{ question.q_id }}</p>
+                <div class="flex justify-center items-center">
+                    <div
+                        class="bg-[#0EC1DD] text-white px-4 sm:px-5 py-4 w-full h-16 sm:w-11/12 max-w-full sm:max-w-[90%] mx-auto flex flex-col sm:flex-row justify-between items-center">
+                        <h1
+                            class="flex justify-center items-center font-bold text-base sm:text-lg lg:text-xl font-bold leading-[33.89px] sm:mr-4">
+                            Direction</h1>
+                    </div>
+                </div>
+                <div class="py-4 bg-white">
+                    <div
+                        class="bg-[#F8F7F7] shadow-lg px-4 sm:px-5 mb-4 w-full sm:w-11/12 max-w-full sm:max-w-[90%] mx-auto">
+                        <p class="text-gray-700 text-base pt-2">Read the paragraph below and answer the following
+                            questions:</p>
+                        <p class="text-gray-700 text-base pt-2">{{ question.direction_description }}</p>
+                    </div>
+                </div>
+                <div class="flex justify-center items-center">
+                    <div
+                        class="bg-[#0EC1DD] text-white px-4 sm:px-5 py-4 w-full sm:w-11/12 h-16 max-w-full sm:max-w-[90%] mx-auto flex flex-col sm:flex-row justify-between items-center">
+                        <h2 class="text-base sm:text-lg lg:text-xl font-bold leading-[33.89px] sm:mr-4">Question {{
+                            loop.index }}/{{ questions|length }} :</h2>
+                    </div>
+                </div>
+                <div class="py-4 bg-white justify-center items-center">
+                    <div
+                        class="bg-[#F8F7F7] shadow-lg px-4 sm:px-5 mb-4 w-full sm:w-11/12 max-w-full sm:max-w-[90%] mx-auto">
+                        <p class="text-gray-600 mb-4 py-4">{{ question.question_description }}</p>
+                    </div>
+                    <div
+                        class="bg-[#F8F7F7] shadow-lg px-4 sm:px-5 mb-0 w-full sm:w-11/12 max-w-full sm:max-w-[90%] mx-auto">
+                        <div class="flex flex-wrap px-12 pt-8">
+                            {% if question.multi_select %}
+                            {% for key, value in question.answer_options.items() %}
+                            <div class="flex items-center mb-4 w-1/2">
+                                <input type="checkbox" name="question_{{ question.q_id }}" value="{{ key }}"
+                                    id="option_{{ question.q_id }}_{{ key }}" class="mr-2" {% if key in
+                                    question.selected_option_list %}checked{% endif %}>
+                                <label for="option_{{ question.q_id }}_{{ key }}">{{ key }}.&emsp;</label>
+                                {% if question.choice_type == 'image' %}
+                                <img src="{{ value }}"
+                                    alt="Option {{ key }}"
+                                    class="w-32 h-32 rounded shadow border border-gray-300" />
+                                {% else %}
+                                <label for="option_{{ question.q_id }}_{{ key }}">{{ value }}</label>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            {% for key, value in question.answer_options.items() %}
+                            <div class="flex items-center mb-4 w-1/2">
+                                <input type="radio" name="question_{{ question.q_id }}" value="{{ key }}"
+                                    id="option_{{ question.q_id }}_{{ key }}" class="mr-2" {% if
+                                    key==question.selected_option_list[0] %}checked{% endif %}>
+                                <label for="option_{{ question.q_id }}_{{ key }}">{{ key }}.&emsp;</label>
+                                 {% if question.choice_type == 'image' %}
+                                <img src="{{ value }}"
+                                    alt="Option {{ key }}"
+                                    class="w-32 h-32 rounded shadow border border-gray-300" />
+                                {% else %}
+                                <label for="option_{{ question.q_id }}_{{ key }}">{{ value }}</label>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="flex justify-between items-center pt-8 pb-8">
+                            {% if not loop.first %}
+                            <button class="bg-[#B3B3B3] text-gray-700 px-12 py-2 rounded mr-4 previous-button"
+                                data-question-id="{{ loop.index - 1 }}">Previous</button>
+                            {% endif %}
+                            <button class="bg-[#FFC107] text-white px-8 py-2 rounded mr-4 marked_for_review-button"
+                                data-question-id="{{ loop.index }}">Mark for Review</button>
+                            {% if not loop.last %}
+                            <button class="bg-[#0EC1DD] text-white px-16 py-2 rounded next-button"
+                                data-question-id="{{ loop.index + 1 }}">Next</button>
+                            {% else %}
+                            <button class="bg-[#0EC1DD] text-white px-16 py-2 rounded submit-button"
+                                data-question-id="{{ loop.index }}">Submit</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Sidebar HTML -->
+        <div id="sidebar" class="sidebar pl-0 pr-0">
+            <button id="toggleSidebar" class="text-2xl focus:outline-none toggle-icon">
+                <i class="fa fa-angle-double-left" style="font-size:28px"></i>
+            </button>
+            <button id="toggleSidebar-right" class="hidden text-2xl focus:outline-none toggle-icon">
+                <i class="fa fa-angle-double-right" style="font-size:28px"></i>
+            </button>
+            <div class="hidden-content w-full">
+                <h2 class="text-base sm:text-lg lg:text-xl justify-centre text-white font-bold p-4 bg-cyan-500">
+                    Questions Marked</h2>
+                <div class="grid grid-cols-4 gap-4 mt-6 scrollable-list bg-white custom-shadow">
+                    {% for question in questions %}
+                    <div class="question-container cursor-pointer" data-question-status="{{question.question_status}}"
+                        data-question-id="{{ loop.index }}">
+                        <span class="question-number text-s tracking-tighter mr-1 text-black">{{ loop.index }}</span>
+                        <div class="question-status not_attempted mr-1" id="status-{{ loop.index }}"></div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="pt-8 bg-white">
+                    <div class="legend"><span class="legend-color bg-green-500"></span><span
+                            class="text-black">Answered</span></div>
+                    <div class="legend"><span class="legend-color bg-red-500"></span><span class="text-black">Not
+                            Answered</span></div>
+                    <div class="legend"><span class="legend-color bg-yellow-500"></span><span class="text-black">Mark
+                            for Review</span></div>
+                    <div class="legend"><span class="legend-color bg-white border border-gray-400"></span><span
+                            class="text-black">Not Attempted</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal for submit confirmation -->
+    <div id="submitConfirmationModal"
+        class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center"
+        data-attempt-id="{{ attempt_id }}">
+        <!-- Modal content -->
+        <div class="bg-white p-8 rounded-lg shadow-lg w-[450px] h-[420px] flex flex-col items-center">
+            <img src="{{ url_for('static', filename='images/submit.png') }}" alt="" class="h-[150px] w-[150px] mb-4">
+            <h2 class="mb-4 text-[#343434] text-2xl text-center font-bold">Are you sure you want to submit?</h2>
+            <div class="flex justify-between w-full mt-4">
+                <button id="cancelSubmit"
+                    class="py-2 px-4 text-center border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+                    style="width: 150px; height: 46px; color: var(--links-color);">Cancel</button>
+                <button id="confirmSubmit" class="bg-[#0EC1DD] text-white text-center px-4 py-2 rounded next-button"
+                    style="width: 150px; height: 46px;">Proceed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Exam -->
+    <div id="timeOver" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center"
+        data-attempt-id="{{ attempt_id }}">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-[450px] h-[420px] flex flex-col items-center">
+            <img src="{{ url_for('static', filename='images/submit.png') }}" alt="" class="h-[150px] w-[150px] mb-4">
+            <h2 class="mb-4 text-red text-2xl text-center font-bold">Time Over</h2>
+            <h2 class="mb-4 text-[#343434] text-2xl text-center font-bold">Submitting the exam</h2>
+        </div>
+    </div>
+
+    <!-- Modal for quit confirmation-->
+    <div id="quitConfirmationModal"
+        class="modal hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center">
+        <div class="modal-content bg-white p-8 rounded-lg shadow-lg w-[450px] h-[420px] flex flex-col items-center">
+            <img src="{{ url_for('static', filename='images/submit.png') }}" alt="" class="h-[150px] w-[150px] mb-4">
+            <h2 class="mb-4 text-[#343434] text-2xl text-center font-bold">Do you want to quit the exam?</h2>
+            <div class="flex justify-between w-full mt-4">
+                <button id="confirmQuit" class="bg-[#0EC1DD] text-white text-center px-4 py-2 rounded next-button"
+                    style="width: 150px; height: 46px;">Yes</button>
+                <button id="cancelQuit"
+                    class="py-2 px-4 text-center border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+                    style="width: 150px; height: 46px; color: var(--links-color);">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="h-[30px] bg-[#D9D9D9]"></div>
+
+    <!-- JavaScript code -->
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const questions = document.querySelectorAll('.question-item');
+            let questionStatus = JSON.parse(localStorage.getItem('questionStatus')) || {};
+            let currentQuestionIndex = 1; // Track the current question index
+            let selectedOptions = JSON.parse(localStorage.getItem('selectedOptions')) || {};
+            let selectedOptionsForq_id = JSON.parse(localStorage.getItem('selectedOptions')) || {};
+            // let q_id_to_q_order = {};
+            let timerIntervalId;
+
+            // Extract q_id to q_order mapping for all questions
+            // questions.forEach((question, index) => {
+            //     const q_id = question.querySelector('.question_id').textContent;
+            //     q_id_to_q_order[q_id] = index + 1; // q_order is 1-based index
+            // });
+
+            // Initialize first question visibility and status
+            showQuestion(currentQuestionIndex);
+
+            //Set selected options
+            if (questions.length === 0) {
+                console.error('No question items found in the DOM.');
+            } else {
+                questions.forEach((_, index) => {
+                    setSelectedOptions(index);
+                });
+            }
+
+            //Initial Side navbar update
+            // console.log(document.querySelectorAll('.question-item').length, document.querySelectorAll('.question-container').length)
+            const questionContainers = document.querySelectorAll('.question-container');
+
+            questionContainers.forEach((container) => {
+                const questionStatusBackend = container.dataset.questionStatus;
+                const questionId = container.dataset.questionId;
+
+                // console.log(`Question ID: ${questionId}, Status: ${questionStatusBackend}`);
+
+                // Perform further actions based on the status
+                updateQuestionStatus(questionId, questionStatusBackend);
+            });
+
+            function updateQuestionStatus(index, status) {
+                const statusElement = document.getElementById(`status-${index}`);
+                statusElement.className = 'question-status';
+                statusElement.classList.add(status);
+                questionStatus[index] = status;
+                localStorage.setItem('questionStatus', JSON.stringify(questionStatus));
+            }
+
+            function setSelectedOptions(index) {
+
+                const question = document.getElementById(`question-${index}`);
+
+                if (!question) {
+                    // console.warn(`Question element with ID question-${index} not found.`);
+                    return;
+                }
+
+                const selectedCheckboxOptions = question.querySelectorAll('input[type="checkbox"]:checked');
+                const selectedRadioOption = question.querySelector('input[type="radio"]:checked');
+                let options = [];
+
+                if (selectedCheckboxOptions.length > 0) {
+                    selectedCheckboxOptions.forEach(option => {
+                        options.push(option.value);
+                    });
+                } else if (selectedRadioOption) {
+                    options.push(selectedRadioOption.value);
+                }
+
+                // Save options with corresponding q_id
+                selectedOptions[index] = options;
+                const q_id = question.querySelector('.question_id').textContent;
+                selectedOptionsForq_id[q_id] = options;
+                localStorage.setItem('selectedOptions', JSON.stringify(selectedOptions));
+                // console.log('setting item', options)
+                localStorage.setItem('selectedOptionsForq_id', JSON.stringify(selectedOptionsForq_id));
+            }
+
+            function saveAnswerStatus(index) {
+                const question = document.getElementById(`question-${index}`);
+                const selectedCheckboxOptions = question.querySelectorAll('input[type="checkbox"]:checked');
+                const selectedRadioOption = question.querySelector('input[type="radio"]:checked');
+                let options = [];
+
+                if (selectedCheckboxOptions.length > 0) {
+                    selectedCheckboxOptions.forEach(option => {
+                        options.push(option.value);
+                    });
+                } else if (selectedRadioOption) {
+                    options.push(selectedRadioOption.value);
+                }
+
+                // Save options with corresponding q_id
+                selectedOptions[index] = options;
+                const q_id = question.querySelector('.question_id').textContent;
+                selectedOptionsForq_id[q_id] = options;
+                localStorage.setItem('selectedOptions', JSON.stringify(selectedOptions));
+                localStorage.setItem('selectedOptionsForq_id', JSON.stringify(selectedOptionsForq_id));
+
+                const isMarkedForReview = question.querySelector(`.marked_for_review-button[data-question-id="${index}"]`).classList.contains('marked');
+                // q_order_q_id[index] = q_id;
+
+                if (isMarkedForReview) {
+                    updateQuestionStatus(index, 'marked_for_review');
+                } else if (options.length > 0) {
+                    updateQuestionStatus(index, 'answered');
+                } else {
+                    updateQuestionStatus(index, 'not_answered');
+                }
+            }
+
+            function loadAnswerStatus(index) {
+                const question = document.getElementById(`question-${index}`);
+                const options = selectedOptions[index] || [];
+                const q_id = question.querySelector('.question_id').textContent;
+                const savedOptions = selectedOptionsForq_id[q_id] || [];
+
+                savedOptions.forEach(option => {
+                    const checkbox = question.querySelector(`input[type="checkbox"][value="${option}"]`);
+                    const radio = question.querySelector(`input[type="radio"][value="${option}"]`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                });
+            }
+
+            function showQuestion(index) {
+                questions.forEach((question, i) => {
+                    if (i === index - 1) {
+                        question.classList.remove('hidden');
+                        loadAnswerStatus(index);
+                    } else {
+                        question.classList.add('hidden');
+                    }
+                });
+            }
+
+            function handleNavigation(step) {
+                saveAnswerStatus(currentQuestionIndex);
+                currentQuestionIndex += step;
+                currentQuestionIndex = Math.max(1, Math.min(currentQuestionIndex, questions.length));
+                showQuestion(currentQuestionIndex);
+
+                document.querySelector('.next-button').dataset.questionId = currentQuestionIndex;
+                document.querySelector('.previous-button').dataset.questionId = currentQuestionIndex;
+            }
+
+            document.querySelectorAll('.next-button').forEach(button => {
+                button.addEventListener('click', () => handleNavigation(1));
+            });
+
+            document.querySelectorAll('.previous-button').forEach(button => {
+                button.addEventListener('click', () => handleNavigation(-1));
+            });
+
+            document.querySelectorAll('.marked_for_review-button').forEach(button => {
+                button.addEventListener('click', function () {
+                    const index = parseInt(this.dataset.questionId);
+                    this.classList.toggle('marked');
+                    saveAnswerStatus(index);
+                });
+            });
+
+            // Initialize first question visibility and status
+            showQuestion(currentQuestionIndex);
+            questions.forEach((_, index) => {
+                if (!questionStatus.hasOwnProperty(index + 1)) {
+                    updateQuestionStatus(index + 1, 'not_attempted');
+                } else {
+                    updateQuestionStatus(index + 1, questionStatus[index + 1]);
+                }
+            });
+
+            // Handle direct question navigation
+            document.querySelectorAll('.question-container').forEach(container => {
+                container.addEventListener('click', function () {
+                    const index = parseInt(this.dataset.questionId);
+                    if (index !== currentQuestionIndex) {
+                        saveAnswerStatus(currentQuestionIndex);
+                        currentQuestionIndex = index;
+                        showQuestion(currentQuestionIndex);
+
+                        // Update the data-question-id attributes
+                        document.querySelector('.next-button').dataset.questionId = currentQuestionIndex;
+                        document.querySelector('.previous-button').dataset.questionId = currentQuestionIndex;
+                    }
+                });
+            });
+
+            // Handle submit button click
+            document.querySelectorAll('.submit-button').forEach(button => {
+                button.addEventListener('click', function (event) {
+                    // event.preventDefault();
+                    document.getElementById('submitConfirmationModal').classList.remove('hidden');
+                });
+            });
+
+            // Handle cancel submit
+            document.getElementById('cancelSubmit').addEventListener('click', function () {
+                document.getElementById('submitConfirmationModal').classList.add('hidden');
+            });
+
+            // Toggle sidebar
+            document.getElementById('toggleSidebar').addEventListener('click', function () {
+                const sidebar = document.getElementById('sidebar');
+                const content = document.getElementById('content');
+                const hiddenContent = sidebar.querySelector('.hidden-content');
+                const icon = this.querySelector('i');
+                sidebar.classList.toggle('sidebar-expanded');
+                content.classList.toggle('content-expanded');
+                hiddenContent.classList.toggle('show');
+                if (sidebar.classList.contains('sidebar-expanded')) {
+                    icon.classList.remove('fa-angle-double-left');
+                    icon.classList.add('fa-angle-double-right');
+                } else {
+                    icon.classList.remove('fa-angle-double-right');
+                    icon.classList.add('fa-angle-double-left');
+                }
+            });
+
+
+            document.getElementById('confirmSubmit').addEventListener('click', function (event) {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+
+                testdata = getQuestionData();
+
+                const data = {
+                    selectedOptions: testdata.selectedOptions,
+                    selectedOptionsForq_id: testdata.selectedOptionsForq_id_parsed,
+                    questionStatus: testdata.questionStatus,
+                    timeLeft: testdata.timeLeft,
+                    qIdToQOrder: testdata.q_id_to_q_order,
+                    attempt_id: testdata.attempt_id,
+                    partial_complete: false
+                };
+
+                localStorage.clear();
+                // console.log(data)
+
+                if (timerIntervalId) {
+                    clearInterval(timerIntervalId);
+                }
+
+                fetch('/SubmitMockTest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // console.log('Success:', data);
+
+                        // Assuming `attempt_id` is part of the response
+                        const attemptId = data.attempt_id;
+
+                        // Dynamically create a form to submit to Report
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/Report';
+                        form.target = '_blank'; // Open in a new tab
+
+                        // Add attempt_id as a hidden input
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'attempt_id';
+                        input.value = attemptId;
+
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+                        form.submit(); // Submit the form
+                        window.location.href = "/MockTestDashboard";
+                    })
+                    .catch((error) => {
+                        // console.error('Error:', error);
+                    });
+            });
+
+            // Timer code
+            function startTimer(duration, display) {
+                let timer = duration, minutes, seconds;
+                timerIntervalId = setInterval(() => {
+                    minutes = parseInt(timer / 60, 10);
+                    seconds = parseInt(timer % 60, 10);
+
+                    minutes = minutes < 10 ? "0" + minutes : minutes;
+                    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                    display.textContent = minutes + ":" + seconds;
+                    localStorage.setItem('timeLeft', timer);
+
+                    if (--timer < 0) {
+                        clearInterval(timerIntervalId);
+                        const timeOverModal = document.getElementById('timeOver');
+                        timeOverModal.classList.remove('hidden');
+
+                        setTimeout(() => {
+                            timeOverModal.classList.add('hidden');
+                            autoSubmitExamToQuit();
+                        }, 3000);
+                    }
+                }, 1000);
+            }
+
+            window.onload = function () {
+
+                let exam_duration_inseconds = localStorage.getItem('timeLeft') || document.querySelector('#exam_duration').textContent;;
+                // console.log(exam_duration_inseconds); 
+                let examDuration = parseInt(exam_duration_inseconds);
+                if (isNaN(examDuration)) {
+                    // console.log("Hello")
+                    const timeOverModal = document.getElementById('timeOver');
+                    timeOverModal.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        timeOverModal.classList.add('hidden');
+                        window.location.href = '/MockTestDashboard';
+                    }, 3000);
+                }
+                const display = document.querySelector('#timer');
+                startTimer(examDuration, display);
+            };
+
+            function autoSubmitExamToQuit() {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+                const testdata = getQuestionData();
+
+                const data = {
+                    selectedOptions: testdata.selectedOptions,
+                    selectedOptionsForq_id: testdata.selectedOptionsForq_id_parsed,
+                    questionStatus: testdata.questionStatus,
+                    timeLeft: localStorage.getItem('timeLeft'),
+                    qIdToQOrder: testdata.q_id_to_q_order,
+                    attempt_id: testdata.attempt_id,
+                };
+
+                localStorage.clear();
+
+                fetch('/SubmitMockTest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const attemptId = data.attempt_id;
+
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = '/Report';
+                        form.target = '_blank';
+
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'attempt_id';
+                        input.value = attemptId;
+
+                        form.appendChild(input);
+                        document.body.appendChild(form);
+                        form.submit();
+
+                        window.location.href = "/MockTestDashboard";
+                    })
+            }
+
+        });
+
+        function getQuestionData() {
+            const selectedOptions = localStorage.getItem('selectedOptions');
+            const selectedOptionsForq_id = localStorage.getItem('selectedOptionsForq_id');
+            const questionStatus = localStorage.getItem('questionStatus');
+            const timeLeft = localStorage.getItem('timeLeft');
+            const attemptIdElement = document.getElementById('submitConfirmationModal');
+            const attempt_id = attemptIdElement.dataset.attemptId;
+
+            // Get all questions and their IDs
+            const questions = document.querySelectorAll('.question-item');
+            const allQuestionIds = Array.from(questions).map(item => item.querySelector('.question_id').textContent);
+
+            // Parse selected options for q_id
+            const selectedOptionsForq_id_parsed = JSON.parse(selectedOptionsForq_id) || {};
+            allQuestionIds.forEach(q_id => {
+                if (!selectedOptionsForq_id_parsed.hasOwnProperty(q_id)) {
+                    selectedOptionsForq_id_parsed[q_id] = [];
+                }
+            });
+
+            // Create q_id to q_order mapping
+            let q_id_to_q_order = {};
+            questions.forEach((question, index) => {
+                const q_id = question.querySelector('.question_id').textContent;
+                q_id_to_q_order[q_id] = index + 1; // q_order is 1-based index
+            });
+
+            // Return all relevant data
+            return {
+                selectedOptions,
+                selectedOptionsForq_id_parsed,
+                questionStatus,
+                timeLeft,
+                attempt_id,
+                allQuestionIds,
+                q_id_to_q_order
+            };
+
+        }
+
+        //handling before unload
+
+        function handleBeforeUnload(event) {
+            event.preventDefault();
+            // console.log("Here doing refresh");
+
+            testdata = getQuestionData();
+
+            const data = {
+                selectedOptions: testdata.selectedOptions,
+                selectedOptionsForq_id: testdata.selectedOptionsForq_id_parsed,
+                questionStatus: testdata.questionStatus,
+                timeLeft: localStorage.getItem('timeLeft'),
+                qIdToQOrder: testdata.q_id_to_q_order,
+                attempt_id: testdata.attempt_id,
+                partial_complete: true
+            };
+
+            localStorage.clear();
+            // console.log(data)
+
+            fetch('/SubmitMockTest', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then(response => {
+                if (!response.ok) {
+                    // console.error('HTTP error! status:', response.status);
+                }
+            }).catch(error => {
+                // console.error('Fetch error:', error);
+            });
+        }
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+    </script>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script>
+        {% for category, message in messages %}
+        alert("{{ message | escape}}");
+        {% endfor %}
+    </script>
+    {% endif %}
+    {% endwith %}
+</body>
+
+</html>

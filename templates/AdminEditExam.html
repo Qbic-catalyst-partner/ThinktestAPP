@@ -1,0 +1,201 @@
+<!-- AdminEditExam.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Exam List</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body class="font-[Inter] bg-gray-50">
+    <div class="flex flex-row h-screen w-full" style="background-color: #f0f4f9;">
+        {% include 'AdminSideNavBar.html' %}
+        <section id="main-content"
+            class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out block text-sm md:text-md lg:text-lg font-medium text-gray-500 mb-2 body-font mt-16">
+            <div class="flex flex-col justify-around">
+                <div class="w-full container py-2 bg-gradient-to-r from-cyan-500">
+                    <p class="ml-16 text-white font-medium text-lg">Edit Exam Information</p>
+                </div>
+
+                <form id="examForm" method="POST" action="/updateExam/{{ exam.exam_id }}">
+                    <div class="pt-6 ml-16 md:mt-0 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div class="col-span-3 gap-4 flex flex-col lg:flex-row">
+                            <div class="flex flex-col">
+                                <label class="block text-sm text-gray-500 mb-2 mt-6">Exam
+                                    Name</label>
+                                <input type="text" name="exam_name" value="{{ exam.exam_name }}"
+                                    placeholder="Enter Exam Name" required
+                                    class="shadow border-0 w-full h-10 rounded-md text-sm p-2">
+                            </div>
+
+                            <div class="flex flex-col">
+                                <label class="block text-sm text-gray-500 mb-2 mt-6">Category</label>
+                                <select name="category_id" required
+                                    class="shadow border-0 w-full h-10 rounded-md text-sm p-2">
+                                    <option value="">Exam Category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.category_id }}" {% if
+                                        exam.category_id==category.category_id %}selected{% endif %}>
+                                        {{ category.category_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="flex flex-col">
+                                <label class="block text-sm text-gray-500 mb-2 mt-6">Exam Year</label>
+                                <input type="text" name="year" value="{{ exam.year }}" placeholder="Enter Exam Year"
+                                    required class="shadow border-0 w-full h-10 rounded-md text-sm p-2">
+                            </div>
+                        </div>
+
+                        <div class="col-span-2">
+                            <label class="block text-sm text-gray-500 mb-2 mt-6">Short
+                                Description</label>
+                            <textarea name="exam_description" class="shadow border-0 rounded-md text-sm p-2 w-full h-50"
+                                rows="4">{{ exam.exam_description }}</textarea>
+                        </div>
+
+                        <div class="col-span-3">
+                            <label class="block text-sm text-gray-500 mb-2 mt-6">How
+                                Can Thinktests Help You Prepare?</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <textarea name="mockdesc" placeholder="Mocktests"
+                                    class="shadow border-0 h-20 rounded-md text-sm p-2"
+                                    rows="4">{{ prepare.mockdesc }}</textarea>
+                                <textarea name="dailydesc" placeholder="Daily Practice"
+                                    class="shadow border-0 h-20 rounded-md text-sm p-2"
+                                    rows="4">{{ prepare.dailydesc }}</textarea>
+                                <textarea name="customdesc" placeholder="Custom Modules"
+                                    class="shadow border-0 h-20 rounded-md text-sm p-2"
+                                    rows="4">{{ prepare.customdesc }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-span-2">
+                            <label class="block text-sm text-gray-500 mb-2 mt-6">Additional
+                                Information</label>
+                            <textarea name="additionalinf" class="shadow border-0 rounded-md text-sm p-2 w-full h-50"
+                                rows="3">{{ prepare.additionalinf }}</textarea>
+                        </div>
+
+                        <div class="col-span-3">
+                            <div class="flex flex-row justify-between items-center">
+                                <label class="font-bold text-lg mb-2 mt-6">Exam Pattern</label>
+                                <button type="button" onclick="addPatternRow()"
+                                    class="w-32 h-10 border border-cyan-500 text-cyan-500 rounded">Add</button>
+                            </div>
+                            <div>
+                                <div
+                                    class="grid grid-cols-4 gap-2 text-white font-semibold text-md mt-6 bg-cyan-500 border border-gray-300 rounded-t">
+                                    <div class="p-2 border-r border-gray-300 text-sm">Subject</div>
+                                    <div class="p-2 border-r border-gray-300 text-sm">No. of Questions</div>
+                                    <div class="p-2 border-r border-gray-300 text-sm">Marks</div>
+                                    <div class="p-2 text-sm">Time Allotted (mins)</div>
+                                </div>
+                                <div id="patternSection" class="space-y-2">
+                                    {% for pattern in patterns %}
+                                    <div class="grid grid-cols-4 gap-2">
+                                        <input type="hidden" name="pattern_ids[]" value="{{ pattern.pattern_id }}">
+                                        <input type="text" name="pattern_subjects[]" value="{{ pattern.subject }}"
+                                            class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+                                        <input type="number" name="pattern_questions[]"
+                                            value="{{ pattern.no_questions }}"
+                                            class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+                                        <input type="number" name="pattern_marks[]" value="{{ pattern.marks }}"
+                                            class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+                                        <input type="number" name="pattern_time[]"
+                                            value="{{ pattern.time_alloted.total_seconds() // 60|int }}"
+                                            class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-span-3">
+                            <div class="flex flex-row justify-between items-center">
+                                <label class="font-bold mb-2 mt-6">Exam Calendar</label>
+                                <button type="button" onclick="addCalendarRow()"
+                                    class="w-32 h-10 border border-cyan-500 text-cyan-500 rounded">Add</button>
+                            </div>
+                            <div>
+                                <div
+                                    class="grid grid-cols-2 gap-2 text-white font-semibold text-md mt-6 bg-cyan-500 border border-gray-300 rounded-t">
+                                    <div class="p-2 border-r border-gray-300 text-sm">Schedule of Event</div>
+                                    <div class="p-2 text-sm">Date</div>
+                                </div>
+                                <div id="calendarSection" class="space-y-2">
+                                    {% for calendar in calendars %}
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="hidden" name="calendar_ids[]" value="{{ calendar.calendar_id }}">
+                                        <input type="text" name="calendar_events[]"
+                                            value="{{ calendar.schedule_of_events }}"
+                                            class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+                                        <input type="date" name="calendar_dates[]"
+                                            value="{{ calendar.important_dates }}"
+                                            class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center mt-8 gap-4 col-span-3">
+                            <button onclick="window.history.back()" type="button"
+                                class="w-32 px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                            <button type="submit" class="w-32 px-4 py-2 bg-cyan-500 text-white rounded">Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        function addPatternRow() {
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-4 gap-2";
+            div.innerHTML = `
+        <input type="hidden" name="pattern_ids[]" value="">
+        <input type="text" name="pattern_subjects[]" placeholder="Subject"  class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+        <input type="number" name="pattern_questions[]" placeholder="No. of Questions"  class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+        <input type="number" name="pattern_marks[]" placeholder="Marks"  class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+        <input type="number" name="pattern_time[]" placeholder="Time Allotted (mins)"  class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+      `;
+            document.getElementById('patternSection').appendChild(div);
+        }
+
+        function addCalendarRow() {
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-2 gap-2";
+            div.innerHTML = `
+        <input type="hidden" name="calendar_ids[]" value="">
+        <input type="text" name="calendar_events[]" placeholder="Schedule of Event"  class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+        <input type="date" name="calendar_dates[]"  class="mt-4 shadow border-0 h-10 rounded-md text-sm p-2" rows="4">
+      `;
+            document.getElementById('calendarSection').appendChild(div);
+        }
+    </script>
+</body>
+
+</html>

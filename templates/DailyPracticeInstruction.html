@@ -1,0 +1,141 @@
+<!-- DailyPracticeInstruction.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Practice Instruction</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .custom-shadow {
+            box-shadow: 0px 4px 4px 0px #00000040;
+        }
+
+        .font {
+            font-family: "Inter", sans-serif;
+        }
+    body,
+    .font-sans {
+        font-family: 'Inter', sans-serif !important;
+    }
+</style>
+</head>
+
+<body class="font text-[#343434]">
+    <nav class="bg-white h-[78px] custom-shadow flex items-center justify-between px-4 sm:px-20">
+        <div class="flex items-center">
+            <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Brand Logo"
+                class="w-[120px] sm:w-[150px] h-auto">
+        </div>
+        <div class="flex items-center">
+            <img src="{{ profile_pic_url }}" alt="Profile" class="w-8 h-8 rounded-full object-cover border border-gray-300">
+        </div>
+    </nav>
+
+    <div class="flex justify-center items-center">
+        <div class="bg-[#0EC1DD] text-white px-4 sm:px-5 py-4 w-full sm:w-11/12 max-w-full sm:max-w-[90%] mx-auto flex flex-col sm:flex-row justify-between items-center"
+            style="margin-top: 54px;">
+            <h1 class="text-base sm:text-lg lg:text-xl font-bold leading-[33.89px] sm:mr-4">General Instructions :</h1>
+            <div class="mt-4 sm:mt-0">
+                <select
+                    class="text-black bg-white border border-gray-300 rounded-[10px] leading-tight focus:outline-none focus:bg-white focus:border-gray-500 w-full sm:w-[249px] h-[45px] px-4 py-2 text-base"
+                    aria-label="Language Selector">
+                    <option value="en" class="text-[14px] sm:text-[18px]">English</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center items-center">
+        <div class="p-4 sm:p-8 mt-1 bg-[#F8F7F7] shadow-lg w-full sm:w-11/12 max-w-full sm:max-w-[90%] mx-auto mb-4">
+            <p class="text-base font-normal leading-[28px] sm:leading-[38px]">
+                Level 1 Questions: This level comprises questions from basic fundamental concepts. The students should
+                start with level 1. The questions included in this level shall be based on the direct use of concepts,
+                basic formulae, etc. These types of questions can be solved quickly and shall be helpful for exams like
+                Bank Clerk/PO Prelims, Office Assistant, and Cooperative Banks. Level 2 Questions: This level includes
+                questions with moderate difficulty levels. These questions shall consist of the applied nature of
+                various topics. The expertise in these types of questions will help candidates in exams like Bank
+                Clerk/SO Mains, Officer Scale I, Insurance, Grade B exams and Grade A Preliminary exams. Level 3
+                Questions: These questions are difficult both in terms of concept as well as higher-order thinking. This
+                level of questions is useful for exams like SBI PO Mains, IBPS PO Mains, LIC AAO, Grade A Officer, and
+                Officer Scale 1 Mains Exam in order to enhance your skills in solving difficult and time-consuming
+                questions.
+            </p>
+            <ul
+                class="list-disc pl-4 sm:pl-8 space-y-2 text-[14px] sm:text-[22px] font-normal leading-[28px] sm:leading-[38px]">
+            </ul>
+            <div class="mt-8 overflow-x-auto">
+                <table
+                    class="w-full sm:w-2/3 text-left border-[0.9px] border-collapse border-[#212529] text-base sm:text-md lg:text-lg font-normal leading-[25.76px]">
+                    <thead>
+                        <tr class="bg-[#0EC1DD] text-white">
+                            <th class="text-center p-2 border">Subject</th>
+                            <th class="text-center p-2 border">Module</th>
+                            <th class="text-center p-2 border">Difficulty Level</th>
+                            <th class="text-center p-2 border">Number of Questions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-base">
+                        {% for config in configs %}
+                        <tr>
+                            <td class="p-2 border">{{ config.subject_name }}</td>
+                            <td class="p-2 border">{{ config.module_name }}</td>
+                            <td class="p-2 border">{{ config.difficulty_name }}</td>
+                            <td class="p-2 border">{{ config.question_count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-8 flex flex-row justify-between gap-4">
+                <form action="/DailyPracticeDashboard" method="get">
+                    <button
+                        class="text-[#0ABDDB] text-base sm:text-lg flex items-center justify-center w-36 sm:w-48 h-12 rounded-lg border-2 border-[#0ABDDB]">
+                        <i class="fa fa-angle-double-left mr-2 sm:mr-4 text-xl"></i> Cancel
+                    </button>
+                </form>
+                <form action="{{ '/DailyPracticeCreateTest' }}" method="post">
+                    <input type="hidden" name="configs" value="{{ configs }}">
+                    <button
+                        class="bg-[#0ABDDB] text-white text-[16px] sm:text-[20px] px-4 py-2 rounded flex items-center justify-center w-[140px] sm:w-[200px] h-[50px] rounded-[10px]">
+                        Proceed <i class="fa fa-angle-double-right ml-2 sm:ml-4" style="font-size:20px"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="h-[35px] bg-[#D9D9D9]"></div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script>
+        {% for category, message in messages %}
+        alert("{{ message | escape }}");
+        {% endfor %}
+    </script>
+    {% endif %}
+    {% endwith %}
+</body>
+
+</html>

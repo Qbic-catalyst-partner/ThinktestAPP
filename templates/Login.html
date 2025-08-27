@@ -1,0 +1,1010 @@
+<!-- Login.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+  <!-- Tailwind CDN and font config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="stylesheet" href="../static/css/index.css" />
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script defer src="https://unpkg.com/alpinejs@3.9.0/dist/cdn.min.js"></script>
+  <style>
+    .font {
+      font-family: "Inter", sans-serif;
+    }
+
+    #pwd-input,
+    #email-input,
+    #login-btn {
+      /* width: 600px; */
+      align-self: center;
+      /* margin-left: 7vw; */
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 10px;
+      top: 58.5%;
+      transform: translateY(-50%);
+      color: #aaa;
+      /* margin-left: 7vw; */
+    }
+
+    @media only screen and (max-width: 768px) {
+
+      /* #pwd-logo,
+      #email-logo {
+        padding-top: 2.5vh;
+      } */
+
+      /* #pwd-input,
+      #email-input {
+        padding-left: 8vw;
+      } */
+
+      /* #forgot-mail {
+        margin-top: 3vh;
+      }
+
+      #forgot-inpt {
+        padding-left: 8vw;
+      } */
+
+      #reset-btn {
+        width: 40vw;
+      }
+    }
+
+    body,
+    .font-sans {
+      font-family: 'Inter', sans-serif !important;
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-b from-[#0ABDDB] to-white font-inter">
+  <div class="flex flex-1 w-full">
+    <!-- First div for image -->
+    <div class="bg-gradient-to-b from-[#0ABDDB99] to-[#FFFFFF99] hidden lg:block">
+      <img src="{{ url_for('static', filename='images/registration-img.jpg') }}" alt="Study Image"
+        class="object-cover opacity-60 lg:h-[100vh] lg:w-full">
+    </div>
+
+    <div class="flex flex-1 items-center flex-col rounded-lg bg-white shadow-lg m-2 p-2 md:m-10 md:p-10">
+      <div class="items-center mb-2 md:mb-6 lg:mb-4">
+        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="Logo">
+      </div>
+      <h1 class="text-l md:text-2xl lg:text-2xl font-bold mb-0 md:mb-6 lg:mb-4 text-[#4E4E4E] items-center">Login Here
+      </h1>
+      <!-- <form action="{{ url_for('loginPage') }}" method="POST" class="mt-10 flex flex-col">
+        <div class="mb-4 relative">
+          <label class="text-sm md:text-l lg:text-xl font-medium text-[#4E4E4E]">Email Address</label>
+          <i id="email-logo" class="fas fa-envelope input-icon"></i>
+          <input id="email-input" type="email" style="height: 50px; width: 550px;"
+            class="w-full border border-gray-300 py-2 rounded-lg input-with-icon"
+            placeholder=" example@gmail.com" name="email" required />
+        </div>
+        <div class="relative">
+          <label class="text-sm md:text-l lg:text-xl font-medium text-[#4E4E4E]">Password</label>
+          <i id="pwd-logo" class="fas fa-lock input-icon"></i>
+          <input id="pwd-input" type="password" style="height: 50px; width: 550px;"
+            class="w-full border border-gray-300 py-2 rounded-lg input-with-icon"
+            placeholder=" Enter your password" name="password" required />
+        </div>
+        <a href="#" id="forgot-password-link">
+          <p class="text-[#0ABDDB]">Forgot
+            Password?</p>
+        </a>
+        <button id="login-btn" type="submit" class="w-full text-white font-semibold py-2 text-lg rounded-lg bg-[#0ABDDB] mt-6" style="height: 46px; width: 550px;">Login</button>
+        <p class="pt-4 text-center">Dont have an account? <a href="{{ url_for('registration')}}"
+            style="text-decoration: underline;" class="text-[#0ABDDB]">Register here</a></p>
+      </form> -->
+      <form action="{{ url_for('loginPage') }}" method="POST"
+        class="mt-10 flex flex-col items-center space-y-4 w-full max-w-md">
+        <!-- Email Address -->
+        <div class="relative w-full">
+          <label class="block text-sm md:text-lg lg:text-xl font-medium text-[#4E4E4E] mb-2">Email Address</label>
+          <i id="email-logo"
+            class="fas fa-envelope input-icon absolute left-3 top-[50%] transform translate-y-[50%] text-gray-500"></i>
+          <input id="email-input" type="email"
+            class="w-full max-w-md h-12 border border-gray-300 rounded-lg pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-[#0ABDDB]"
+            placeholder="example@gmail.com" name="email" required />
+        </div>
+
+        <!-- Password -->
+        <div class="relative w-full ">
+          <label class="block text-sm md:text-lg lg:text-xl font-medium text-[#4E4E4E] mb-2">Password</label>
+          <i id="pwd-logo"
+            class="fas fa-lock input-icon absolute left-3 top-[50%] transform translate-y-[50%] text-gray-500"></i>
+          <input id="pwd-input" type="password"
+            class="w-full max-w-md h-12 border border-gray-300 rounded-lg pl-10 pr-3 focus:outline-none focus:ring-2 focus:ring-[#0ABDDB]"
+            placeholder="Enter your password" name="password" required />
+        </div>
+
+        <!-- Forgot Password Link -->
+        <div class="w-full text-left">
+          <a href="#" id="forgot-password-link" class="text-[#0ABDDB] hover:underline text-base">
+            Forgot Password?
+          </a>
+        </div>
+
+        <!-- Login Button -->
+        <button id="login-btn" type="submit"
+          class="w-full max-w-md h-12 text-white font-semibold text-lg rounded-lg bg-[#0ABDDB] hover:bg-[#089ac1] transition duration-300">
+          Login
+        </button>
+
+        <!-- Register Link -->
+        <p class="pt-4 text-center text-base">
+          Don't have an account?
+          <!-- <br> -->
+          <a href="{{ url_for('registration') }}" class="text-[#0ABDDB] hover:underline">
+            Register here<br>
+          </a>
+          <!-- <a href="{{ url_for('institutionregistration') }}" class="text-[#0ABDDB] hover:underline">
+            Institutions Register here
+          </a> -->
+        </p>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Email Not Registered Modal -->
+  <div id="email-not-registered-modal"
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 {{ 'hidden' if not show_email_not_registered_modal else '' }}">
+    <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%] text-center">
+      <div class="mb-4">
+        <i class="fas fa-exclamation-circle text-red-600 text-3xl mb-4"></i>
+        <h2 class="text-xl font-semibold">Email Not Registered</h2>
+        <p class="text-gray-600">The email address you entered is not registered. Please register first.</p>
+      </div>
+      <button id="close-email-not-registered-modal"
+        class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+        style="width:180px; height: 46px; background-color: #0ABDDB;">OK</button>
+    </div>
+  </div>
+
+  <!-- Incorrect Password Modal -->
+  <div id="incorrect-password-modal"
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 {{ 'hidden' if not show_incorrect_password_modal else '' }}">
+    <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%] text-center">
+      <div class="mb-4">
+        <i class="fas fa-exclamation-circle text-red-600 text-3xl mb-4"></i>
+        <h2 class="text-xl font-semibold">Incorrect Password</h2>
+        <p class="text-gray-600">The password you entered is not correct. Please enter the correct one or reset your
+          password.</p>
+      </div>
+      <button id="close-incorrect-password-modal"
+        class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+        style="width:180px; height: 46px; background-color: #0ABDDB;">OK</button>
+    </div>
+  </div>
+
+  <!-- Forgot password modal -->
+  <div id="forgot-password-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%]">
+      <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='images/lock-img.svg') }}" alt="lock icon" class="mx-auto" width="120"
+          height="120" />
+        <h2 class="text-2xl font-semibold">Forgot password</h2>
+        <p class="text-gray-600">Please enter your email to reset the password</p>
+      </div>
+      <form id="forgot-password-form">
+        <!-- <div class="mb-4 relative">
+          <label class="block py-2 pt-4 text-lg font-medium">Your Email Address</label>
+          <div class="flex text-center items-center">
+            <i id="forgot-mail" style="font-size: 1.25rem; padding-right: 2px;" class="flex fas fa-envelope input-icon"></i>
+            <input id="forgot-inpt" type="email"
+              class="flex w-full max-w-[520px] h-[64px] border border-gray-300 px-[2vw] py-2 pl-8 rounded-lg"
+              placeholder="example@gmail.com" name="user_email" required />
+          </div>
+        </div> -->
+        <label class="block py-2 pt-4 text-lg font-medium">Your Email Address</label>
+        <div class="relative w-full max-w-[520px]">
+          <!-- Icon positioned inside input -->
+          <i id="forgot-mail"
+            class="fas fa-envelope absolute left-5 top-1/2 -translate-y-1/2 text-xl text-gray-500"></i>
+
+          <!-- Input with padding to make space for the icon -->
+          <input id="forgot-inpt" type="email" class="w-full h-[64px] border border-gray-300 pl-14 pr-4 rounded-lg"
+            placeholder="example@gmail.com" name="user_email" required />
+        </div>
+
+
+        <div id="email-error" class="text-red-500 font-semibold mt-1 hidden">Email ID not registered</div>
+        <!-- Error message -->
+        <div class="flex justify-center pt-4">
+          <button type="submit" id="reset-btn"
+            style="background-color: var(--links-color); width: 226px; height: 56px; border-radius: 11.3px;"
+            class="w-[12vw] text-lg self-center text-white font-semibold py-2 px-4">Reset Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Enter OTP Modal -->
+  <div id="otp-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white p-8 rounded-lg w-[80%] md:w-[40%]">
+      <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='images/otp-img.svg') }}" alt="" width="64" height="64"
+          style="align-self: center; margin-left: 15vw; padding-bottom: 3vh" />
+        <h2 class="text-2xl font-semibold">Please Check Your Email</h2>
+        <p class="text-gray-600">We have sent a code to: <span id="email-display"></span></p>
+      </div>
+      <form id="otp-form">
+        <div class="mb-4 input-container">
+          <label class="block py-2 ml-16 pb-4 pt-4 text-xl font-semibold">Enter OTP</label>
+          <div class="flex justify-center space-x-8">
+            <input type="text" name="otp1"
+              class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg" maxlength="1"
+              required />
+            <input type="text" name="otp2"
+              class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg" maxlength="1"
+              required />
+            <input type="text" name="otp3"
+              class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg" maxlength="1"
+              required />
+            <input type="text" name="otp4"
+              class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg" maxlength="1"
+              required />
+            <input type="text" name="otp5"
+              class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg" maxlength="1"
+              required />
+            <input type="text" name="otp6"
+              class="otp-input w-[3.5vw] h-[6.3vh] border border-gray-300 text-center mx-1 rounded-lg" maxlength="1"
+              required />
+          </div>
+          <div id="otp-error" class="text-center text-red-500 font-semibold mt-2 hidden">Enter Correct OTP</div>
+        </div>
+        <div class="flex justify-center pt-4 space-x-32 pb-4">
+          <button type="button" onclick="closeOtpModal()" id="otp-model-close-btn"
+            class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+            style="width:180px; height: 46px; color: var(--links-color);">Cancel</button>
+          <button id="otp-button" type="submit"
+            class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+            style="width:180px; height: 46px; background-color: var(--links-color);">Verify</button>
+        </div>
+        <div id="countdown-timer" class="text-center text-lg font-semibold text-gray-600 mt-4"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- * RESET PWD modal -->
+  <div id="reset-pwd-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[38%]">
+      <div class="text-center mb-6">
+        <img class="ml-[14.6vw] pb-6" src="{{ url_for('static', filename='images/new-pwd.svg') }}" alt="" width="64"
+          height="64">
+        <h2 class="text-2xl font-semibold pb-2">Set a new password</h2>
+        <p class="text-gray-600">Create a new password. Ensure it differs from previous ones for security</p>
+      </div>
+      <form id="reset-password-form" action="{{ url_for('reset_password') }}" method="post">
+        <div class="mb-4">
+          <label for="password" class="block text-lg font-medium text-gray-700">Password</label>
+          <input type="password" id="password" name="password"
+            class="mt-1 block w-full max-w-[500px] h-[54px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Enter your new password" required>
+        </div>
+        <div class="mb-6">
+          <label for="confirm-password" class="block text-lg font-medium text-gray-700">Confirm Password</label>
+          <input type="password" id="confirm-password" name="confirm-password"
+            class="mt-1 block w-full max-w-[500px] h-[54px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            placeholder="Re-enter your new password" required>
+        </div>
+        <div class="mb-6 flex flex-row justify-evenly space-x-4 w-full">
+          <div class="flex items-center justify-center">
+            <img class="w-[6vw]" src="{{ url_for('static', filename='images/Profile/pwdLock.svg') }}" alt="Lock Icon">
+          </div>
+
+          <div class="flex flex-col items-start justify-center">
+            <p class="text-gray-700 font-medium">Password should have at least</p>
+            <div class="grid grid-cols-2 gap-x-6 text-sm text-gray-600 mt-2">
+              <ul class="list-disc space-y-1">
+                <li>1 Upper Case</li>
+                <li>1 Lower Case</li>
+                <li>1 Number</li>
+              </ul>
+              <ul class="list-disc space-y-1">
+                <li>1 Special Character</li>
+                <li>Min Size 8 Characters</li>
+                <li>Max. 18 Characters</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-between pt-2">
+          <button type="button" id="cancel-reset-btn"
+            class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+            style="width:200px; height: 46px;">Cancel</button>
+          <button type="submit" id="update-password-btn"
+            class="py-2 mr-8 px-4 border border-transparent rounded-md shadow-sm text-l font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            style="width:200px; height: 46px; background-color: var(--links-color);">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RESET PWD SUCCESS modal -->
+  <div id="success-rest-pwd-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[35%]">
+      <div class="text-center mb-6">
+        <img src="{{ url_for('static', filename='images/tick.svg') }}" alt="Success" width="95" height="95">
+        <h2 class="text-2xl font-semibold pb-2">Successful</h2>
+        <p class="text-gray-600">Your Password has been updated!</p>
+      </div>
+      <div class="flex justify-center pt-8 pb-4">
+        <button id="close-success-modal-btn" type="button"
+          class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+          style="width:200px; height: 46px; color: var(--links-color);">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Message Modal -->
+  <div id="success-message-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[35%]">
+      <div class="text-center mb-6">
+        <img class="ml-[12.3vw] pb-6" src="{{ url_for('static', filename='images/tick.svg') }}" alt="" width="95"
+          height="95">
+        <h2 class="text-2xl font-semibold pb-2">Successful</h2>
+        <p class="text-gray-600">Email ID Verified Successfully!</p>
+      </div>
+      <div class="flex justify-center pt-8 pb-4">
+        <button id="close-success-msg-modal-btn" type="button"
+          class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+          style="width:200px; height: 46px; color: var(--links-color);">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription Inactive Modal -->
+  <div id="subscription-inactive-modal"
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 {{ 'hidden' if not show_subscription_inactive_modal else '' }}">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[30%]">
+      <div class="flex flex-col text-center justify-center items-center mb-6 text-[#343434]">
+        <img class="pb-6" src="{{ url_for('static', filename='images/subscription-expired.svg') }}" alt="" width="150"
+          height="150">
+        <h2 class="text-3xl font-bold pb-2">Subscription Inactive</h2>
+        <p class="text-gray-600 text-lg">Kindly reach out and renew your subscription to access the portal.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription Expired Modal -->
+  <div id="subscription-expired-modal"
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 {{ 'hidden' if not show_subscription_expired_modal else '' }}">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[30%]">
+      <div class="flex flex-col text-center justify-center items-center mb-6 text-[#343434]">
+        <img class="pb-6" src="{{ url_for('static', filename='images/subscription-expired.svg') }}" alt="" width="150"
+          height="150">
+        <h2 class="text-3xl font-bold pb-2">Subscription Expired</h2>
+        <p class="text-gray-600 text-lg"> Kindly renew your subscription to access the portal.</p>
+      </div>
+      <div class="flex justify-center pt-4 pb-4">
+        <button type="button" id="renew-subscription-btn"
+          class="px-4 border border-transparent rounded-md shadow-sm text-l font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          style="width:200px; height: 46px; background-color: var(--links-color);">
+          Renew Subscription
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purchase Plan Modal -->
+  <div id="purchase-plan-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="flex flex-col items-center justify-center bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[35%]">
+      <div class="text-center mb-6 text-[#343434]">
+        <h2 class="text-2xl font-bold pb-2">Renew Your Plan</h2>
+        <p class="text-gray-600 px-12 text-lg">
+          Your subscription expired on {{ expiry_date }} <br>
+          Please select a plan to continue
+        </p>
+      </div>
+      <div class="text-left px-28 py-4">
+        {% for plan in plans %}
+        <label class="block mb-4">
+          <input type="radio" name="plan" class="mr-2" data-amount="{{ plan.cost|int * 100 }}"
+            data-desc="{{ plan.name }}" data-plan-id="{{ plan.id }}">
+          {{ plan.name }} - ₹{{ "{:,.2f}".format(plan.cost) }}
+        </label>
+        {% endfor %}
+      </div>
+      <div id="error-message" class="text-center text-red-500 mb-4 hidden">Please select any one of the above plans to
+        proceed!</div>
+      <div class="flex justify-evenly pt-4 pb-4 w-full">
+        <button type="button" id="cancel-payment-btn"
+          class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+          style="width:180px; height: 46px; color: #0ABDDB;">Cancel</button>
+        <button id="proceed-to-payment-btn" type="button"
+          class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+          style="width:180px; height: 46px; background-color: #0ABDDB;">Proceed</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Payment Modal -->
+  <div id="confirm-payment-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="flex flex-col items-center justify-center bg-white p-8 rounded-lg shadow-lg w-[50%] md:w-[35%]">
+      <img class="pb-6" src="{{ url_for('static', filename='images/Profile/confirmPayment.svg') }}" alt="" width="64"
+        height="64">
+      <div class="text-center mb-6 text-[#343434]">
+        <h2 class="text-2xl font-bold pb-2">Confirm Payment</h2>
+        <p class="text-gray-600 px-12 text-lg" id="selected-plan-text">
+          You have selected the '3 Months' subscription plan. Click on 'Make Payment' to proceed.
+        </p>
+      </div>
+
+      <div class="flex justify-evenly pt-4 pb-4 w-full">
+        <button type="button" id="cancel-payment-btn"
+          class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+          style="width:180px; height: 46px; color: #0ABDDB;">Cancel</button>
+        <button id="confirm-payment-btn" type="button"
+          class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-white"
+          style="width:180px; height: 46px; background-color: #0ABDDB;">Make Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Loading Modal -->
+  <div id="payment-loading-modal"
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+    <div class="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center justify-center">
+      <img src="{{ url_for('static', filename='images/Profile/paymentLoading.svg') }}" alt="Loading"
+        class="mb-4 animate-spin" width="64" height="64">
+      <h2 class="text-xl font-semibold mb-2">Please Don’t Refresh</h2>
+      <p class="text-gray-600">We are currently processing your payment!</p>
+    </div>
+  </div>
+
+  <!-- Payment Received Modal -->
+  <div id="payment-received-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="flex flex-col items-center justify-center bg-white p-8 rounded-lg shadow-lg w-[50%] md:w-[35%]">
+      <img class="pb-6" src="{{ url_for('static', filename='images/Profile/paymentReceived.svg') }}" alt="" width="64"
+        height="64">
+      <div class="text-center mb-6 text-[#343434]">
+        <h2 class="text-2xl font-bold pb-2">Payment Received</h2>
+        <p class="text-gray-600 px-12 text-lg">
+          We have received your payment. Your subscription is now renewed. Kindly login to access the portal.
+        </p>
+      </div>
+
+      <div class="pt-4 pb-4">
+        <button type="button"
+          class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-xl font-medium text-gray-700 bg-white border-2 border-sky-300"
+          style="width:180px; height: 46px; color: #0ABDDB;" onclick="window.location.href='/'">
+          Login
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const forgotPasswordLink = document.getElementById("forgot-password-link");
+      const forgotPasswordModal = document.getElementById("forgot-password-modal");
+      const otpModal = document.getElementById("otp-modal");
+      const emailDisplay = document.getElementById("email-display");
+      const forgotPasswordForm = document.getElementById("forgot-password-form");
+      const otpForm = document.getElementById("otp-form");
+      const verifyOtpBtn = document.getElementById("otp-button");
+      const countdownDisplay = document.getElementById("countdown-timer");
+      const otpErrorDisplay = document.getElementById("otp-error");
+      const emailError = document.getElementById("email-error");
+      const resetPasswordForm = document.getElementById("reset-password-form");
+      let countdownInterval;
+      let errorTimeout;
+
+      // Show the forgot password modal
+      forgotPasswordLink.addEventListener("click", function (event) {
+        event.preventDefault();
+        forgotPasswordModal.classList.remove("hidden");
+      });
+
+      // Close the modal when clicking outside of it
+      window.addEventListener("click", function (event) {
+        if (event.target === forgotPasswordModal) {
+          forgotPasswordModal.classList.add("hidden");
+        }
+      });
+
+      // Handle the forgot password form submission
+      forgotPasswordForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const email = document.getElementById("forgot-inpt").value;
+
+        fetch("/check_email", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: email })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              sendOtp(email);
+            } else {
+              showError(emailError, data.message);
+            }
+          })
+          .catch(error => {
+            // console.error("Error:", error);
+          });
+      });
+
+      // Handle the OTP form submission
+      otpForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const email = emailDisplay.textContent;
+        const otp = getOtpFromInputs();
+
+        fetch("/verify_otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: email, otp: otp })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              otpModal.classList.add("hidden");
+              document.getElementById("reset-pwd-modal").classList.remove("hidden");
+            } else {
+              showError(otpErrorDisplay, "Invalid OTP. Please try again.");
+              clearOtpInputs();
+            }
+          })
+          .catch(error => {
+            // console.error("Error:", error);
+          });
+      });
+
+      // Handle the reset password form submission
+      resetPasswordForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const email = emailDisplay.textContent;
+        const password = document.getElementById("password").value;
+
+        fetch("/reset_password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: email, password: password })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              //alert("Password updated successfully!");
+              document.getElementById("success-rest-pwd-modal").classList.remove("hidden");
+              document.getElementById("reset-pwd-modal").classList.add("hidden");
+            } else {
+              alert(data.message);
+            }
+          })
+          .catch(error => {
+            alert("Error updating password. Please try again.");
+          });
+      });
+
+      // Handle the OTP resend functionality
+      verifyOtpBtn.addEventListener("click", function (event) {
+        if (verifyOtpBtn.textContent === "Resend OTP") {
+          resendOtp();
+        }
+      });
+
+      // Show error messages
+      function showError(element, message) {
+        element.textContent = message;
+        element.classList.remove("hidden");
+        clearTimeout(errorTimeout);
+        errorTimeout = setTimeout(() => {
+          element.classList.add("hidden");
+        }, 3000);
+      }
+
+      // Get OTP from inputs
+      function getOtpFromInputs() {
+        return Array.from(document.querySelectorAll(".otp-input"))
+          .map(input => input.value)
+          .join("");
+      }
+
+      // Clear the OTP input fields
+      function clearOtpInputs() {
+        document.querySelectorAll(".otp-input").forEach(input => {
+          input.value = "";
+        });
+      }
+
+      // Start the OTP countdown
+      function startCountdown() {
+        let timeLeft = 60;
+        countdownDisplay.textContent = `Resend OTP: ${timeLeft}`;
+        verifyOtpBtn.textContent = "Verify OTP";
+        countdownInterval = setInterval(() => {
+          timeLeft -= 1;
+          countdownDisplay.textContent = `Resend OTP: ${timeLeft}`;
+          if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            countdownDisplay.textContent = "";
+            verifyOtpBtn.textContent = "Resend OTP";
+            clearOtpInputs();
+          }
+        }, 1000);
+      }
+
+      // Send OTP to the email
+      function sendOtp(email) {
+        fetch("/send_otp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email: email })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              emailDisplay.textContent = email;
+              forgotPasswordModal.classList.add("hidden");
+              otpModal.classList.remove("hidden");
+              startCountdown();
+            }
+          })
+          .catch(error => {
+            // console.error("Error:", error);
+          });
+      }
+
+      // Resend OTP
+      function resendOtp() {
+        const email = emailDisplay.textContent;
+        sendOtp(email);
+      }
+
+      function handleOtpInput(event) {
+        const input = event.target;
+        if (input.nextElementSibling && input.value) {
+          input.nextElementSibling.focus();  // Move to the next input field
+        }
+      }
+
+      // Add event listener to OTP inputs for automatic cursor movement
+      document.querySelectorAll('.otp-input').forEach(input => {
+        input.addEventListener('input', handleOtpInput);
+      });
+    });
+
+    // Script to handle the modal behavior
+    document.addEventListener('DOMContentLoaded', function () {
+      // Show the modal on success response from server
+      function showSuccessModal() {
+        var modal = document.getElementById('success-rest-pwd-modal');
+        modal.classList.remove('hidden');
+      }
+
+      // Function to close the enter otp modal
+      document.getElementById('otp-model-close-btn').addEventListener('click', function () {
+        document.getElementById('otp-modal').classList.add('hidden');
+      });
+
+      // Function to reset password modal
+      document.getElementById('cancel-reset-btn').addEventListener('click', function () {
+        document.getElementById('reset-pwd-modal').classList.add('hidden');
+      });
+
+      // Function to close success message modal
+      document.getElementById('close-success-msg-modal-btn').addEventListener('click', function () {
+        document.getElementById('success-message-modal').classList.add('hidden');
+      });
+
+      // Close the modal on 'Back' button click     
+      document.getElementById('back-btn').addEventListener('click', function () {
+        var modal = document.getElementById('success-rest-pwd-modal');
+        modal.classList.add('hidden');
+      });
+
+      // Example AJAX request on form submission
+      document.getElementById('reset-password-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        var formData = new FormData(this);
+        fetch('/reset_password', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: formData.get('email'),
+            password: formData.get('password')
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showSuccessModal();
+            } else {
+              alert(data.message);  // Handle error response if needed
+            }
+          })
+          .catch(error => {
+            // console.error('Error:', error);
+            alert("Error updating password. Please try again.");
+          });
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const subscriptionExpiredModal = document.getElementById("subscription-expired-modal");
+      const purchasePlanModal = document.getElementById("purchase-plan-modal");
+      const renewPlanButton = document.getElementById("renew-subscription-btn"); // Select the Renew Plan button
+      const cancelPaymentBtns = document.querySelectorAll("#cancel-payment-btn");
+
+      const confirmPaymentModal = document.getElementById("confirm-payment-modal");
+      const paymentReceivedModal = document.getElementById("payment-received-modal");
+      const proceedToPaymentBtn = document.getElementById("proceed-to-payment-btn");
+      const confirmPaymentBtn = document.getElementById("confirm-payment-btn");
+
+      // Get error message, plan options, and confirmation text
+      const errorMessage = document.getElementById("error-message");
+      const planOptions = document.querySelectorAll('input[name="plan"]');
+      const selectedPlanText = document.getElementById("selected-plan-text"); // Element in Confirm Payment Modal
+
+      // Function to get the selected plan
+      function getSelectedPlan() {
+        const selectedPlan = Array.from(planOptions).find(plan => plan.checked);
+        return selectedPlan ? selectedPlan.nextSibling.textContent.trim() : null;
+      }
+
+      // Show the modal when the "Renew Plan" button is clicked
+      renewPlanButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        subscriptionExpiredModal.classList.add("hidden");
+        purchasePlanModal.classList.remove("hidden");
+      });
+
+      // Open Confirm Payment Modal when "Proceed" is clicked in Purchase Plan Modal
+      proceedToPaymentBtn.addEventListener("click", function () {
+        const selectedPlan = getSelectedPlan();
+        if (!selectedPlan) {
+          errorMessage.classList.remove("hidden"); // Show error message
+        } else {
+          errorMessage.classList.add("hidden"); // Hide error message
+
+          // Update Confirm Payment Modal with the selected plan
+          selectedPlanText.textContent = `You have selected the '${selectedPlan}' subscription plan. Click on 'Make Payment' to proceed.`;
+
+          // Show Confirm Payment Modal
+          purchasePlanModal.classList.add("hidden");
+          confirmPaymentModal.classList.remove("hidden");
+        }
+      });
+
+      document.getElementById('confirm-payment-btn').addEventListener('click', function () {
+        // Hide confirm modal
+        document.getElementById('confirm-payment-modal').classList.add('hidden');
+
+        // Show loading modal
+        document.getElementById('payment-loading-modal').classList.remove('hidden');
+
+        const name = "{{ student.first_name }} {{ student.last_name }}";
+        const email = "{{ student.email }}";
+        const phone = "{{ student.contact_no }}";
+
+        // Get selected plan amount and description                
+        const selectedRadio = document.querySelector('input[name="plan"]:checked');
+
+        if (!selectedRadio) {
+          document.getElementById('error-message').classList.remove('hidden');
+          return;
+        }
+
+        const amount = parseInt(selectedRadio.getAttribute('data-amount')); // in paise
+        const description = selectedRadio.getAttribute('data-desc');
+        const planId = parseInt(selectedRadio.getAttribute('data-plan-id'));
+        // const studentId = "{{ studentId }}";
+
+        fetch('/create_order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amount, email: email })
+        })
+          .then(response => response.json())
+          .then(orderData => {
+            const options = {
+              key: "{{ razorpaykey }}",
+              amount: amount,
+              currency: "INR",
+              name: "Thinktests",
+              description: description,
+              order_id: orderData.order_id,
+              handler: function (response) {
+                fetch('/verify_payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
+                })
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data.status === 'success') {
+                      fetch('/createSubscription', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          student_id: "{{ student.student_id }}",
+                          plan_id: planId
+                        })
+                      })
+                        .then(res => res.json())
+                        .then(data => {
+                          document.getElementById('payment-loading-modal').classList.add('hidden');
+                          if (data.status === 'success') {
+                            document.getElementById('payment-received-modal').classList.remove('hidden');
+                          } else {
+                            alert("Subscription renewal failed.");
+                          }
+                        })
+                        .catch(err => {
+                          document.getElementById('payment-loading-modal').classList.add('hidden');
+                          alert("Error renewing subscription.");
+                        });
+                    } else {
+                      alert("Signature verification failed. Please try again.");
+                      document.getElementById('payment-loading-modal').classList.add('hidden');
+                    }
+                  })
+                  .catch(err => {
+                    alert("Verification error. Please try again.");
+                    document.getElementById('payment-loading-modal').classList.add('hidden');
+                  });
+              },
+              modal: {
+                ondismiss: function () {
+                  document.getElementById('payment-loading-modal').classList.add('hidden');
+                },
+                escape: true,
+                backdropclose: true
+              },
+              prefill: {
+                name: name,
+                email: email,
+                contact: phone
+              },
+              theme: {
+                color: "#0ABDDB"
+              }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+              alert("Payment failed: " + response.error.description);
+              document.getElementById('payment-loading-modal').classList.add('hidden');
+            });
+            rzp.open();
+          })
+          .catch(err => {
+            alert("Unable to initiate payment. Please try again.");
+            document.getElementById('payment-loading-modal').classList.add('hidden');
+          });
+      });
+
+
+      // Close any modal when clicking "Cancel"
+      cancelPaymentBtns.forEach(button => {
+        button.addEventListener("click", function () {
+          purchasePlanModal.classList.add("hidden");
+          confirmPaymentModal.classList.add("hidden");
+          paymentReceivedModal.classList.add("hidden");
+        });
+      });
+
+      // Close modal when clicking outside of it
+      window.addEventListener("click", function (event) {
+        if (event.target === purchasePlanModal) {
+          purchasePlanModal.classList.add("hidden");
+          errorMessage.classList.add("hidden");
+        }
+        if (event.target === confirmPaymentModal) {
+          confirmPaymentModal.classList.add("hidden");
+        }
+        if (event.target === paymentReceivedModal) {
+          paymentReceivedModal.classList.add("hidden");
+        }
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var emailNotRegisteredModal = document.getElementById('email-not-registered-modal');
+      var incorrectPasswordModal = document.getElementById('incorrect-password-modal');
+      var closeEmailNotRegisteredModal = document.getElementById('close-email-not-registered-modal');
+      var closeIncorrectPasswordModal = document.getElementById('close-incorrect-password-modal');
+
+      if (emailNotRegisteredModal) {
+        closeEmailNotRegisteredModal.addEventListener('click', function () {
+          emailNotRegisteredModal.classList.add('hidden');
+        });
+      }
+
+      if (incorrectPasswordModal) {
+        closeIncorrectPasswordModal.addEventListener('click', function () {
+          incorrectPasswordModal.classList.add('hidden');
+        });
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var emailNotRegisteredModal = document.getElementById('email-not-registered-modal');
+      var incorrectPasswordModal = document.getElementById('incorrect-password-modal');
+      var closeEmailNotRegisteredModal = document.getElementById('close-email-not-registered-modal');
+      var closeIncorrectPasswordModal = document.getElementById('close-incorrect-password-modal');
+
+      // Function to get query parameter values
+      function getQueryParam(param) {
+        var urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+      }
+
+      // Check query parameters to display modals
+      if (getQueryParam('email_not_registered') === 'true') {
+        emailNotRegisteredModal.classList.remove('hidden');
+      }
+
+      if (getQueryParam('incorrect_password') === 'true') {
+        incorrectPasswordModal.classList.remove('hidden');
+      }
+
+      if (getQueryParam('subscription_expired') === 'true') {
+        // Handle subscription expired modal if needed
+      }
+
+      // Event listeners to close modals
+      if (emailNotRegisteredModal) {
+        closeEmailNotRegisteredModal.addEventListener('click', function () {
+          emailNotRegisteredModal.classList.add('hidden');
+          // Clear query parameter from URL
+          var url = new URL(window.location);
+          url.searchParams.delete('email_not_registered');
+          window.history.pushState({}, '', url);
+        });
+      }
+
+      if (incorrectPasswordModal) {
+        closeIncorrectPasswordModal.addEventListener('click', function () {
+          incorrectPasswordModal.classList.add('hidden');
+          // Clear query parameter from URL
+          var url = new URL(window.location);
+          url.searchParams.delete('incorrect_password');
+          window.history.pushState({}, '', url);
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

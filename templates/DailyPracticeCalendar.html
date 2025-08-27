@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Calendar</title>
+  <!-- Tailwind CSS -->
+  <!-- Tailwind CDN and font config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body class="font-[Inter] bg-gray-50">
+
+  <div class="flex flex-row h-screen w-[100vw]">
+    <!-- Navbar section -->
+
+    {% include 'SideNavBar.html' %}
+    <!-- Main Content Section -->
+    <section id="main-content"
+      class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out text-gray-700 body-font mt-16">
+
+      <div class="max-w-full mx-auto p-4">
+        <!-- Navigation Controls -->
+        <div class="flex items-center justify-between mb-6">
+          <button id="prevButton" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">&lt; Previous</button>
+
+          <!-- Centered Calendar Header -->
+          <div class="text-center relative">
+            <h2 id="calendarHeader" class="text-xl font-bold cursor-pointer" style="color: var(--links-color);"></h2>
+            <input id="datePicker" type="date"
+              class="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden border border-gray-300 rounded px-2 py-1 bg-white shadow" />
+          </div>
+
+          <button id="nextButton" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next &gt;</button>
+        </div>
+
+        <!-- View Switcher -->
+        <div class="flex items-center justify-center space-x-4 mb-6">
+          <button id="dayView" class="view-button px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Day</button>
+          <button id="weekView" class="view-button px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Week</button>
+          <button id="monthView" class="view-button px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Month</button>
+        </div>
+
+        <!-- Calendar Views -->
+        <div id="dayViewContainer" class="hidden">
+          <!-- Day View -->
+          <div class="p-4 bg-white border border-gray-300 rounded shadow">
+            <h3 id="dayHeader" class="text-lg font-bold mb-4"></h3>
+            <div id="dayEvent" class="p-4"></div>
+          </div>
+        </div>
+
+        <div id="weekViewContainer" class="hidden">
+          <!-- Week View -->
+          <div class="p-4 bg-white border border-gray-300 rounded shadow">
+            <div id="weekEvents" class="grid gap-4 grid-cols-[repeat(auto-fit,_minmax(180px,_1fr))]">
+              <!-- Week view tiles -->
+            </div>
+          </div>
+        </div>
+
+        <div id="monthViewContainer">
+          <!-- Month View -->
+          <div class="p-4 bg-white border border-gray-300 rounded shadow">
+            <div id="monthEvents" class="grid grid-cols-1 gap-4">
+              <!-- Month view tiles -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <script>
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+
+    const dayViewContainer = document.getElementById("dayViewContainer");
+    const weekViewContainer = document.getElementById("weekViewContainer");
+    const monthViewContainer = document.getElementById("monthViewContainer");
+    const monthEvents = document.getElementById("monthEvents");
+    const weekEvents = document.getElementById("weekEvents");
+    const dayHeader = document.getElementById("dayHeader");
+    const dayEvent = document.getElementById("dayEvent");
+    const calendarHeader = document.getElementById("calendarHeader");
+    const datePicker = document.getElementById("datePicker");
+
+    document.getElementById("prevButton").addEventListener("click", () => changePeriod(-1));
+    document.getElementById("nextButton").addEventListener("click", () => changePeriod(1));
+    document.getElementById("dayView").addEventListener("click", () => showView("day"));
+    document.getElementById("weekView").addEventListener("click", () => showView("week"));
+    document.getElementById("monthView").addEventListener("click", () => showView("month"));
+
+    calendarHeader.addEventListener("click", () => {
+      datePicker.classList.toggle("hidden");
+      datePicker.focus();
+    });
+
+    datePicker.addEventListener("change", (event) => {
+      const selectedDate = new Date(event.target.value);
+      if (!isNaN(selectedDate)) {
+        currentDate = selectedDate;
+        currentMonth = selectedDate.getMonth();
+        currentYear = selectedDate.getFullYear();
+        updateHeader();
+        updateViews();
+      }
+      datePicker.classList.add("hidden");
+    });
+
+    const viewButtons = document.querySelectorAll(".view-button");
+
+    function highlightSelectedView(view) {
+      viewButtons.forEach((button) => {
+        if (button.id !== view + "View") { // Only change buttons that are NOT the selected view
+          button.classList.remove("bg-cyan-500", "text-white");
+          button.classList.add("bg-gray-200");
+        } else {
+          button.classList.remove("bg-gray-200");
+          button.classList.add("bg-cyan-500", "text-white");
+        }
+      });
+    }
+
+    function showView(view) {
+      dayViewContainer.classList.add("hidden");
+      weekViewContainer.classList.add("hidden");
+      monthViewContainer.classList.add("hidden");
+
+      if (view === "day") {
+        dayViewContainer.classList.remove("hidden");
+        generateDayView();
+      } else if (view === "week") {
+        weekViewContainer.classList.remove("hidden");
+        generateWeekEvents();
+      } else {
+        monthViewContainer.classList.remove("hidden");
+        generateMonthEvents();
+      }
+      highlightSelectedView(view);
+    }
+
+    function changePeriod(direction) {
+      if (!dayViewContainer.classList.contains("hidden")) {
+        currentDate.setDate(currentDate.getDate() + direction);
+        generateDayView();
+      } else if (!weekViewContainer.classList.contains("hidden")) {
+        currentDate.setDate(currentDate.getDate() + direction * 7);
+        generateWeekEvents();
+      } else {
+        currentMonth += direction;
+        if (currentMonth < 0) {
+          currentMonth = 11;
+          currentYear--;
+        } else if (currentMonth > 11) {
+          currentMonth = 0;
+          currentYear++;
+        }
+        currentDate = new Date(currentYear, currentMonth, 1);
+        generateMonthEvents();
+      }
+      updateHeader();
+    }
+
+    function updateHeader() {
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      calendarHeader.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    }
+
+    async function fetchAndDisplayAttempts(fromDate, toDate, dayCells = null) {
+      const response = await fetch(`/dc_fetch_attempts?from_date=${fromDate}&to_date=${toDate}`);
+      const data = await response.json();
+
+      renderAttempts(data[0], "Completed", dayCells);  // tests_completed
+      renderAttempts(data[1], "Incomplete", dayCells); // incomplete_tests
+      renderAttempts(data[2], "Lapsed", dayCells);     // lapsed_tests
+    }
+
+    function renderAttempts(attempts, statusLabel, dayCells = null) {
+      let targetContainer;
+
+      if (!dayViewContainer.classList.contains("hidden")) {
+        targetContainer = dayEvent;
+        // dayEvent.innerHTML = "";
+      } else if (!weekViewContainer.classList.contains("hidden")) {
+        // targetContainer = weekEvents;
+        // weekEvents.innerHTML = "";
+      } else {
+        targetContainer = monthEvents;
+        // monthEvents.innerHTML = "";
+      }
+
+      Object.values(attempts).forEach(attempt => {
+        const tile = document.createElement("div");
+        tile.classList.add("p-4", "rounded-lg", "bg-gray-200", "shadow-md", "border-l-4", "mb-2");
+        const date = new Date(attempt.date);
+        const attemptDate = date.toLocaleDateString('en-CA');
+        let container = dayCells ? dayCells[attemptDate] : targetContainer;
+
+        if (!container) return;
+
+        let borderColor;
+        if (statusLabel === "Completed") {
+          borderColor = "border-green-500";
+        } else if (statusLabel === "Incomplete") {
+          borderColor = "border-cyan-500";
+        } else {
+          borderColor = "border-red-500";
+        }
+        tile.classList.add(borderColor);
+
+        tile.innerHTML = `
+            <h3 class="text-sm font-bold">${statusLabel} Attempt</h3>
+            <p class="text-sm">Date: ${attemptDate}</p>
+            <p class="text-sm">Score: ${attempt.score} / ${attempt.max_score}</p>
+            <p class="mt-2 text-sm font-bold">Configurations:</p>
+            <div class="text-sm">
+        ${attempt.configs.map(config => `
+            <p>Subject: ${config.subject_name}</p>
+            <p>Module: ${config.module_name}</p>
+            <p>Difficulty: ${config.difficulty_level}</p>
+            <hr class="my-1 border-gray-300">
+        `).join("")}
+    </div>
+        `;
+
+        container.appendChild(tile);
+      });
+    }
+
+    function generateDayView() {
+      const textColor = isToday(currentDate) ? "text-cyan-500" : "text-gray-500";
+      dayHeader.innerHTML = `<h4 class="font-bold ${textColor}">${currentDate.toDateString()}</h4>`;
+      dayEvent.innerHTML = "";
+      const today = currentDate.toLocaleDateString('en-CA');
+      fetchAndDisplayAttempts(today, today);
+    }
+
+    function generateWeekEvents() {
+      weekEvents.innerHTML = "";
+      const startOfWeek = new Date(currentDate);
+      startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6); // End of week (Saturday)
+
+      const formattedStartOfWeek = startOfWeek.toLocaleDateString('en-CA');
+      const formattedEndOfWeek = endOfWeek.toLocaleDateString('en-CA');
+      const dayCells = {};
+
+      for (let i = 0; i < 7; i++) {
+        const dayCell = document.createElement("div");
+        const date = new Date(startOfWeek);
+        const textColor = isToday(date) ? "text-cyan-500" : "text-gray-500";
+        dayCell.classList.add("p-4", "border-r", "border-b", "border-gray-300", "rounded", "shadow");
+        dayCell.innerHTML = `<h4 class="font-bold mb-2 ${textColor}">${date.toDateString()}</h4>`;
+        weekEvents.appendChild(dayCell);
+        dayCells[date.toLocaleDateString('en-CA')] = dayCell;
+        startOfWeek.setDate(startOfWeek.getDate() + 1);
+      }
+
+      fetchAndDisplayAttempts(formattedStartOfWeek, formattedEndOfWeek, dayCells);
+    }
+
+    function generateMonthEvents() {
+      monthEvents.innerHTML = "";
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const startDate = new Date(currentYear, currentMonth, 1).toLocaleDateString('en-CA');
+      const endDate = new Date(currentYear, currentMonth, daysInMonth).toLocaleDateString('en-CA');
+      const dayCells = {};
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(currentYear, currentMonth, day);
+        const formattedDate = date.toLocaleDateString('en-CA');
+        const dayRow = document.createElement("div");
+        const textColor = isToday(date) ? "text-cyan-500" : "text-gray-500";
+        dayRow.classList.add("p-4", "border-b", "border-gray-300", "bg-white", "rounded", "shadow");
+        dayRow.innerHTML = `<h4 class="font-bold ${textColor}">${day} ${date.toLocaleString('default', { month: 'long' })}</h4>`;
+        monthEvents.appendChild(dayRow);
+        dayCells[formattedDate] = dayRow;
+      }
+      fetchAndDisplayAttempts(startDate, endDate, dayCells);
+    }
+
+
+    function isToday(date) {
+      const today = new Date();
+      return (
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+      );
+    }
+
+    function updateViews() {
+      if (!dayViewContainer.classList.contains("hidden")) generateDayView();
+      else if (!weekViewContainer.classList.contains("hidden")) generateWeekEvents();
+      else generateMonthEvents();
+    }
+
+    updateHeader();
+    // generateDayView();
+    showView("day");
+  </script>
+</body>
+
+</html>

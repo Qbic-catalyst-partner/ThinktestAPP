@@ -1,0 +1,341 @@
+<!-- AdminAddQuestion.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Question Information</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<style>
+    .correct-checkbox:checked {
+        background-color: #16a34a;
+        /* Tailwind Green-600 */
+        border-color: #16a34a;
+    }
+
+    .correct-checkbox:checked+.correct-label {
+        color: #16a34a;
+        /* Tailwind Green-600 */
+        font-weight: 600;
+    }
+
+    body,
+    .font-sans {
+        font-family: 'Inter', sans-serif !important;
+    }
+</style>
+
+<body class="font-[Inter] bg-gray-50">
+    <div class="flex flex-row h-screen w-full" style="background-color: #f0f4f9;">
+        {% include 'AdminSideNavBar.html' %}
+
+        <section id="main-content"
+            class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out block text-sm font-medium text-gray-500 mb-1 body-font mt-16">
+            <div class="flex flex-col justify-around">
+                <div class="w-full container py-2 bg-gradient-to-r from-cyan-500">
+                    <p class="ml-16 text-white font-medium text-lg">Add Question Information</p>
+                </div>
+
+                <form id="addForm" class="w-full container">
+                    <div class="pt-6 ml-16 lg:mt-0 lg:w-2/3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div class="col-span-1 lg:col-span-2">
+                            <p class="block text-sm text-gray-500 mb-1">Question Name</p>
+                            <textarea type="text" id="name" placeholder="Enter Question Name"
+                                class="shadow border-0 rounded-md text-sm w-full"></textarea>
+                        </div>
+
+                        <!-- Subject -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Subject</label>
+                            <select id="subject-select" name="subject"
+                                class="shadow border-0 w-80 h-10 rounded-md text-sm p-2">
+                                <option value="" selected disabled>Select Subject</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.subject_id }}">{{ subject.subject_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Module -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Module</label>
+                            <select id="module-select" name="module"
+                                class="shadow border-0 w-80 h-10 rounded-md text-sm p-2">
+                                <option value="" selected disabled>Select Module</option>
+                                <!-- {% for module in modules %}
+                                <option value="{{ module.module_id }}" data-subject-id="{{ module.subject_id }}">{{
+                                    module.module_name }}</option>
+                                {% endfor %} -->
+                            </select>
+                        </div>
+
+                        <!-- Difficulty Level Dropdown -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Difficulty Level</label>
+                            <select id="difficulty" name="difficulty"
+                                class="shadow border-0 w-80 h-10 rounded-md text-sm p-2">
+                                <option value="" selected disabled>Select Difficulty</option>
+                                <option value="1">Easy</option>
+                                <option value="2">Medium</option>
+                                <option value="3">Hard</option>
+                                <option value="4">Very Hard</option>
+                                <option value="5">Expert</option>
+                            </select>
+                        </div>
+
+                        <!-- Direction Dropdown -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Direction</label>
+                            <select id="direction" name="direction"
+                                class="shadow border-0 w-80 h-10 rounded-md text-sm p-2">
+                                <option value="" selected disabled>Select Direction</option>
+                                {% for direction in directions %}
+                                <option value="{{ direction.direction_id }}">{{ direction.direction_description }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-span-1 lg:col-span-2">
+                            <label class="block text-sm text-gray-500 mb-1">Choices</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="text" class="form-radio"
+                                        onclick="toggleChoiceType('text')" checked>
+                                    <span class="ml-2">Text</span>
+                                </label>
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="image" class="form-radio"
+                                        onclick="toggleChoiceType('image')">
+                                    <span class="ml-2">Image</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Text Input Choices -->
+                        <div id="text-choices" class="grid grid-cols-1 lg:grid-cols-2 col-span-1 lg:col-span-2 gap-4">
+                            {% for i in range(1,5) %}
+                            <div class="mt-4">
+                                <label class="block text-sm text-gray-500 mb-1">Choice {{ i }}</label>
+                                <input type="text" id="choice{{i}}" name="choice{{i}}"
+                                    placeholder="Enter Choice {{ i }}"
+                                    class="shadow border-0 p-2 rounded-md w-80 h-10 text-sm" required />
+                                <div class="flex items-center mt-2">
+                                    <input id="correct{{i}}" name="correct_option" type="checkbox" value="{{i}}"
+                                        class="correct-checkbox h-4 w-4 text-cyan-500 border-gray-300 rounded">
+                                    <label for="correct{{i}}" class="correct-label ml-2 text-sm text-gray-500">Correct
+                                        Answer</label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Image Upload Choices -->
+                        <div id="image-choices"
+                            class="hidden grid grid-cols-1 lg:grid-cols-2 col-span-1 lg:col-span-2 gap-4">
+                            {% for i in range(1,5) %}
+                            <div class="mt-4">
+                                <label class="block text-sm text-gray-500 mb-1">Choice {{ i }} Image URL</label>
+                                <input type="text" id="image_choice{{i}}" name="image_choice{{i}}"
+                                    placeholder="Blob URL for Choice {{ i }}"
+                                    class="shadow border-0 p-2 rounded-md w-80 h-10 text-sm" required />
+                                <div class="flex items-center mt-2">
+                                    <input id="correct_img{{i}}" name="correct_option" type="checkbox" value="{{i}}"
+                                        class="correct-checkbox h-4 w-4 text-cyan-500 border-gray-300 rounded">
+                                    <label for="correct_img{{i}}"
+                                        class="correct-label ml-2 text-sm text-gray-500">Correct Answer</label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-span-1 lg:col-span-2">
+                            <p class="block text-sm text-gray-500 mb-1">Solution</p>
+                            <textarea id="solution"
+                                placeholder="Lorem ipsum dolor sit amet consectetur. Morbi ultricies id amet enim praesent nulla volutpat."
+                                class="shadow border-0 h-20 rounded-md font-normal text-center pt-6 placeholder:text-center placeholder:text-gray-400 w-full"></textarea>
+                        </div>
+
+                        <div class="col-span-1 lg:col-span-2 mt-8 flex justify-center gap-4">
+                            <button onclick="window.history.back()" type="button"
+                                class="w-32 px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                            <button type="submit" class="w-32 px-4 py-2 bg-cyan-500 text-white rounded">Add</button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+        <div class="bg-white p-6 rounded-md shadow-md w-96">
+            <h2 class="text-xl font-semibold mb-4">Import Questions</h2>
+            <input type="file" id="importFile" accept=".xlsx" class="block mb-4">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeImportModal()" class="px-4 py-2 bg-gray-400 text-white rounded">Cancel</button>
+                <button onclick="uploadImportFile()" class="px-4 py-2 bg-cyan-500 text-white rounded">Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            const selectedType = document.querySelector('input[name="choice_type"]:checked').value;
+            toggleChoiceType(selectedType);
+        });
+
+        function toggleChoiceType(type) {
+            const textBlock = document.getElementById('text-choices');
+            const imageBlock = document.getElementById('image-choices');
+
+            if (type === 'text') {
+                textBlock.classList.remove('hidden');
+                imageBlock.classList.add('hidden');
+
+                // Set required for text inputs
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById(`choice${i}`).setAttribute('required', 'required');
+                    document.getElementById(`image_choice${i}`).removeAttribute('required');
+                }
+
+            } else {
+                textBlock.classList.add('hidden');
+                imageBlock.classList.remove('hidden');
+
+                // Set required for image inputs
+                for (let i = 1; i <= 4; i++) {
+                    document.getElementById(`image_choice${i}`).setAttribute('required', 'required');
+                    document.getElementById(`choice${i}`).removeAttribute('required');
+                }
+            }
+        }
+
+        document.getElementById('subject-select').addEventListener('change', function () {
+            const selectedSubjectId = this.value;
+            const moduleSelect = document.getElementById('module-select');
+
+            moduleSelect.innerHTML = `<option value="" selected disabled>Select Module</option>`;
+
+            {% for mapping in subject_module_mappings %}
+            if ("{{ mapping.subject_id }}" === selectedSubjectId) {
+                const option = document.createElement('option');
+                option.value = "{{ mapping.module_id }}";
+                option.text = "{{ mapping.module_name }}";
+                moduleSelect.appendChild(option);
+            }
+            {% endfor %}
+        });
+
+        document.getElementById('addForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+
+            // Question and other fields
+            formData.append('name', document.getElementById('name').value);
+            formData.append('subject', document.getElementById('subject-select').value);
+            formData.append('module', document.getElementById('module-select').value);
+
+            // // Build answer_options
+            // const answerOptions = {
+            //     "A": document.getElementById('choice1').value,
+            //     "B": document.getElementById('choice2').value,
+            //     "C": document.getElementById('choice3').value,
+            //     "D": document.getElementById('choice4').value
+            // };
+            // formData.append('answer_options', JSON.stringify(answerOptions));
+
+            // // Correct Options
+            // const selectedOptions = [];
+            // if (document.getElementById('correct1').checked) selectedOptions.push('A');
+            // if (document.getElementById('correct2').checked) selectedOptions.push('B');
+            // if (document.getElementById('correct3').checked) selectedOptions.push('C');
+            // if (document.getElementById('correct4').checked) selectedOptions.push('D');
+
+            // Determine type: 'text' or 'image'
+            const choiceType = document.querySelector('input[name="choice_type"]:checked').value;
+            formData.append('type', choiceType);  // append type field
+
+            const answerOptions = {};
+            const selectedOptions = [];
+
+            // Iterate over 4 choices
+            for (let i = 1; i <= 4; i++) {
+                const optionKey = String.fromCharCode(64 + i); // A, B, C, D
+
+                if (choiceType === 'text') {
+                    const val = document.getElementById(`choice${i}`).value;
+                    answerOptions[optionKey] = val;
+                    if (document.getElementById(`correct${i}`).checked) selectedOptions.push(optionKey);
+                } else {
+                    const val = document.getElementById(`image_choice${i}`).value;
+                    answerOptions[optionKey] = val;
+                    if (document.getElementById(`correct_img${i}`).checked) selectedOptions.push(optionKey);
+                }
+            }
+
+            formData.append('answer_options', JSON.stringify(answerOptions));
+
+            // Save multi_select
+            formData.append('multi_select', selectedOptions.length > 1);
+
+            // Save correct_option in {A,B} format
+            const correctOptionFormatted = `{${selectedOptions.join(",")}}`;
+            formData.append('correct_option', correctOptionFormatted);
+
+            // Solution,direction,difficulty
+            formData.append('solution', document.getElementById('solution').value);
+            formData.append('direction', document.getElementById('direction').value);
+            formData.append('difficulty', document.getElementById('difficulty').value);
+
+
+            // Now send it
+            fetch('/adminAddQuestion', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        alert('Question added successfully.');
+                        window.location.href = '/AdminQuestionList';
+                    } else {
+                        alert(res.message || 'Failed to add question');
+                    }
+                })
+                .catch(err => {
+                    // console.error(err);
+                    alert('Error occurred while adding question');
+                });
+        });
+
+    </script>
+
+</body>
+
+</html>

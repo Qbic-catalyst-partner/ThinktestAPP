@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Question</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<style>
+    .correct-checkbox:checked {
+        background-color: #16a34a;
+        /* Tailwind Green-600 */
+        border-color: #16a34a;
+    }
+
+    .correct-checkbox:checked+.correct-label {
+        color: #16a34a;
+        /* Tailwind Green-600 */
+        font-weight: 600;
+    }
+
+    body,
+    .font-sans {
+        font-family: 'Inter', sans-serif !important;
+    }
+</style>
+
+<body class="font-[Inter] bg-gray-50">
+    <div class="flex flex-row h-screen w-full" style="background-color: #f0f4f9;">
+        {% include 'AdminSideNavBar.html' %}
+
+        <section id="main-content"
+            class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out block text-sm font-medium text-gray-500 mb-1 body-font mt-16">
+            <div class="flex flex-col justify-around">
+                <div class="w-full container py-2 bg-gradient-to-r from-cyan-500">
+                    <p class="ml-16 text-white font-medium text-lg">Edit Question Information</p>
+                </div>
+
+                <form id="editForm" class="w-full container">
+                    <div class="pt-6 ml-16 md:mt-0 md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <!-- Question Description -->
+                        <div class="col-span-2">
+                            <p class="block text-sm text-gray-500 mb-1">Question Name</p>
+                            <input type="text" id="name" value="{{ question.question_description }}"
+                                class="shadow border-0 w-full rounded-md font-normal" required />
+                        </div>
+
+                        <!-- Subject -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Subject</label>
+                            <select id="subject" class="shadow border-0 w-80 h-10 rounded-md text-sm p-2" required>
+                                <option value="">Select</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.subject_id }}" {% if subject.subject_id==question.subject_id
+                                    %}selected{% endif %}>
+                                    {{ subject.subject_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Module -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Module</label>
+                            <select id="module" class="shadow border-0 w-80 h-10 rounded-md text-sm p-2">
+                                <option value="">Select</option>
+                                {% for module in modules %}
+                                <option value="{{ module.module_id }}" {% if module.module_id==question.module_id
+                                    %}selected{% endif %}>
+                                    {{ module.module_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Difficulty -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Difficulty</label>
+                            <select id="difficulty" class="shadow border-0 w-80 h-10 rounded-md text-sm p-2" required>
+                                <option value="">Select</option>
+                                <option value="1" {% if question.difficulty_level==1 %}selected{% endif %}>Easy</option>
+                                <option value="2" {% if question.difficulty_level==2 %}selected{% endif %}>Medium
+                                </option>
+                                <option value="3" {% if question.difficulty_level==3 %}selected{% endif %}>Hard</option>
+                                <option value="4" {% if question.difficulty_level==4 %}selected{% endif %}>Very Hard
+                                </option>
+                                <option value="5" {% if question.difficulty_level==5 %}selected{% endif %}>Expert
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Direction -->
+                        <div>
+                            <label class="block text-sm text-gray-500 mb-1">Direction</label>
+                            <select id="direction" class="shadow border-0 w-80 h-10 rounded-md text-sm p-2" required>
+                                <option value="">Select</option>
+                                {% for direction in directions %}
+                                <option value="{{ direction.direction_id }}" {% if
+                                    direction.direction_id==question.direction_id %}selected{% endif %}>
+                                    {{ direction.direction_description }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-span-2">
+                            <label class="block text-sm text-gray-500 mb-1">Choices</label>
+                        </div>
+
+                        <!-- Choices -->
+
+                        <!-- Choice Type Selector -->
+                        <div class="col-span-2">
+                            <label class="block text-sm text-gray-500 mb-1">Choices</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="text" class="form-radio"
+                                        onclick="toggleChoiceType('text')" {% if question.choice_type=='text'
+                                        %}checked{% endif %}>
+                                    <span class="ml-2">Text</span>
+                                </label>
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="image" class="form-radio"
+                                        onclick="toggleChoiceType('image')" {% if question.choice_type=='image'
+                                        %}checked{% endif %}>
+                                    <span class="ml-2">Image</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        {% set letters = ['A', 'B', 'C', 'D'] %}
+                        <!-- Text Input Choices -->
+                        <div id="text-choices"
+                            class="grid grid-cols-1 md:grid-cols-2 col-span-2 gap-4 {% if question.choice_type != 'text' %}hidden{% endif %}">
+                            {% for i in range(1,5) %}
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Enter Choice {{ i }}</label>
+                                <input type="text" id="choice{{i}}"
+                                    value="{{ question.answer_options[letters[i-1]] if question.answer_options else '' }}"
+                                    class="shadow border-0 p-2 rounded-md w-80 h-10 text-sm" />
+                                <div class="flex items-center mt-2">
+                                    <input id="correct{{i}}" type="checkbox" value="{{ letters[i-1] }}" {% if
+                                        question.correct_option and letters[i-1] in question.correct_option[0]
+                                        %}checked{% endif %}
+                                        class="correct-checkbox h-4 w-4 text-cyan-500 border-gray-300 rounded">
+                                    <label for="correct{{i}}" class="correct-label ml-2 text-sm text-gray-500">Correct
+                                        Answer</label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Image URL Choices -->
+                        <div id="image-choices"
+                            class="grid grid-cols-1 md:grid-cols-2 col-span-2 gap-4 {% if question.choice_type != 'image' %}hidden{% endif %}">
+                            {% for i in range(1,5) %}
+                            <div>
+                                <label class="block text-sm text-gray-500 mb-1">Choice {{ i }} Image URL</label>
+                                <input type="text" id="image_choice{{i}}"
+                                    value="{{ question.answer_options[letters[i-1]] if question.answer_options else '' }}"
+                                    class="shadow border-0 p-2 rounded-md w-80 h-10 text-sm" />
+                                <div class="flex items-center mt-2">
+                                    <input id="correct_img{{i}}" type="checkbox" value="{{ letters[i-1] }}" {% if
+                                        question.correct_option and letters[i-1] in question.correct_option[0]
+                                        %}checked{% endif %}
+                                        class="correct-checkbox h-4 w-4 text-cyan-500 border-gray-300 rounded">
+                                    <label for="correct_img{{i}}"
+                                        class="correct-label ml-2 text-sm text-gray-500">Correct Answer</label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Solution -->
+                        <div class="col-span-2">
+                            <p class="block text-sm text-gray-500 mb-1">Solution</p>
+                            <textarea id="solution"
+                                class="shadow border-0 w-full rounded-md font-normal text-center pt-6 placeholder:text-center placeholder:text-gray-400">{{ question.solution_explanation }}</textarea>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="mt-8 flex gap-4 justify-center col-span-2">
+                            <button onclick="window.history.back()" type="button"
+                                class="w-32 px-4 py-2 border border-cyan-500 text-cyan-500 rounded">Cancel</button>
+                            <button type="submit" class="w-32 px-4 py-2 bg-cyan-500 text-white rounded">Save</button>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const moduleSelect = document.getElementById('module');
+        const subjectSelect = document.getElementById('subject');
+
+        const currentSubjectId = "{{ question.subject_id }}";
+        const currentModuleId = "{{ question.module_id }}";
+
+        const subjectModuleMap = [
+            {% for mapping in subject_module_mappings %}
+        {
+            subject_id: "{{ mapping.subject_id }}",
+                module_id: "{{ mapping.module_id }}",
+                    module_name: "{{ mapping.module_name }}"
+        },
+        {% endfor %}
+        ];
+
+        function populateModules(subjectId, selectedModuleId = null) {
+            moduleSelect.innerHTML = `<option value="" disabled>Select Module</option>`;
+
+            subjectModuleMap.forEach(mapping => {
+                if (mapping.subject_id === subjectId) {
+                    const option = document.createElement('option');
+                    option.value = mapping.module_id;
+                    option.text = mapping.module_name;
+                    if (selectedModuleId && mapping.module_id === selectedModuleId) {
+                        option.selected = true;
+                    }
+                    moduleSelect.appendChild(option);
+                }
+            });
+        }
+
+        // Populate modules based on subject change
+        subjectSelect.addEventListener('change', function () {
+            populateModules(currentSubjectId, currentModuleId);
+        });
+
+        // Populate on page load with current values
+        window.addEventListener('DOMContentLoaded', function () {
+            populateModules(currentSubjectId, currentModuleId);
+
+            // Determine which type was pre-selected and toggle the correct block
+            const selectedType = document.querySelector('input[name="choice_type"]:checked');
+            if (selectedType) {
+                toggleChoiceType(selectedType.value);
+            }
+        });
+
+        // document.getElementById('editForm').addEventListener('submit', function (e) {
+        //     e.preventDefault();
+
+        //     const correctOptions = [];
+        //     ['1', '2', '3', '4'].forEach((num, index) => {
+        //         const checkbox = document.getElementById('correct' + num);
+        //         if (checkbox && checkbox.checked) {
+        //             const letter = String.fromCharCode(65 + index);
+        //             correctOptions.push(letter);
+        //         }
+        //     });
+
+        //     if (correctOptions.length === 0) {
+        //         alert('Please select at least one correct answer.');
+        //         return;
+        //     }
+
+        //     const formData = new FormData();
+        //     formData.append('q_id', '{{ question.q_id }}');
+        //     formData.append('name', document.getElementById('name').value);
+        //     formData.append('subject', document.getElementById('subject').value);
+        //     formData.append('module', document.getElementById('module').value);
+        //     formData.append('direction', document.getElementById('direction').value);
+        //     formData.append('difficulty', document.getElementById('difficulty').value);
+
+        //     const answerOptions = {
+        //         "A": document.getElementById('choice1').value,
+        //         "B": document.getElementById('choice2').value,
+        //         "C": document.getElementById('choice3').value,
+        //         "D": document.getElementById('choice4').value
+        //     };
+        //     formData.append('answer_options', JSON.stringify(answerOptions));
+
+        //     formData.append('correct_option', `{${correctOptions.join(',')}}`);
+
+        //     formData.append('solution', document.getElementById('solution').value);
+
+        //     fetch('/adminEditQuestion', {
+        //         method: 'POST',
+        //         body: formData
+        //     })
+        //         .then(res => res.json())
+        //         .then(res => {
+        //             if (res.success) {
+        //                 alert('Question updated successfully.');
+        //                 window.location.href = '/AdminQuestionList';
+        //             } else {
+        //                 alert(res.message || 'Failed to update question');
+        //             }
+        //         })
+        //         .catch(err => {
+        //             // console.error(err);
+        //             alert('Error occurred while updating question');
+        //         });
+        // });
+
+        function toggleChoiceType(type) {
+            const textBlock = document.getElementById('text-choices');
+            const imageBlock = document.getElementById('image-choices');
+
+            if (type === 'text') {
+                textBlock.classList.remove('hidden');
+                imageBlock.classList.add('hidden');
+
+                // Set required for text inputs
+                for (let i = 1; i <= 4; i++) {
+                    const textInput = document.getElementById(`choice${i}`);
+                    const imageInput = document.getElementById(`image_choice${i}`);
+                    if (textInput) textInput.setAttribute('required', 'required');
+                    if (imageInput) imageInput.removeAttribute('required');
+                }
+            } else {
+                textBlock.classList.add('hidden');
+                imageBlock.classList.remove('hidden');
+
+                // Set required for image inputs
+                for (let i = 1; i <= 4; i++) {
+                    const textInput = document.getElementById(`choice${i}`);
+                    const imageInput = document.getElementById(`image_choice${i}`);
+                    if (imageInput) imageInput.setAttribute('required', 'required');
+                    if (textInput) textInput.removeAttribute('required');
+                }
+            }
+        }
+
+        document.getElementById('editForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            // console.log("✅ Submit triggered");
+
+            const formData = new FormData();
+            formData.append('q_id', '{{ question.q_id }}');
+            formData.append('name', document.getElementById('name')?.value || '');
+            formData.append('subject', document.getElementById('subject')?.value || '');
+            formData.append('module', document.getElementById('module')?.value || '');
+            formData.append('direction', document.getElementById('direction')?.value || '');
+            formData.append('difficulty', document.getElementById('difficulty')?.value || '');
+            formData.append('solution', document.getElementById('solution')?.value || '');
+
+            const choiceType = document.querySelector('input[name="choice_type"]:checked')?.value;
+            if (!choiceType) {
+                alert('Please select choice type');
+                return;
+            }
+            formData.append('type', choiceType);
+
+            const answerOptions = {};
+            const selectedOptions = [];
+
+            for (let i = 1; i <= 4; i++) {
+                const optionKey = String.fromCharCode(64 + i); // A, B, C, D
+                const choiceId = choiceType === 'text' ? `choice${i}` : `image_choice${i}`;
+                const checkboxId = choiceType === 'text' ? `correct${i}` : `correct_img${i}`;
+
+                const inputElem = document.getElementById(choiceId);
+                const checkboxElem = document.getElementById(checkboxId);
+
+                const value = inputElem?.value?.trim() || '';
+                answerOptions[optionKey] = value;
+
+                if (checkboxElem?.checked) {
+                    selectedOptions.push(optionKey);
+                }
+            }
+
+            // console.log("Answer Options:", answerOptions);
+            // console.log("Correct Options:", selectedOptions);
+
+            if (selectedOptions.length === 0) {
+                alert('Please select at least one correct answer.');
+                return;
+            }
+
+            formData.append('answer_options', JSON.stringify(answerOptions));
+            formData.append('correct_option', `{${selectedOptions.join(',')}}`);
+            formData.append('multi_select', selectedOptions.length > 1);
+
+            fetch('/adminEditQuestion', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        alert('Question updated successfully.');
+                        window.location.href = '/AdminQuestionList';
+                    } else {
+                        alert(res.message || 'Failed to update question');
+                    }
+                })
+                .catch(err => {
+                    // console.error('❌ Fetch Error:', err);
+                    alert('Error occurred while updating question');
+                });
+        });
+
+    </script>
+
+</body>
+
+</html>

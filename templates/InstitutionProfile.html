@@ -1,0 +1,489 @@
+<!-- Profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Info Dashboard</title>
+    <!-- Tailwind CDN and font config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../static/css/index.css" />
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.4.1/dist/flowbite.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet" />
+    <!-- script -->
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/script-name.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body class="font-[Inter] bg-gray-50">
+    <div class="flex flex-row h-screen w-[100vw]">
+        <!-- Navbar section -->
+
+        {% include 'InstitutionSideNavBar.html' %}
+
+        <!-- Main Content Section -->
+        <section id="main-content"
+            class="flex-1 overflow-auto p-4 transition-all duration-300 ease-in-out text-gray-700 body-font mt-16">
+
+            <!-- Profile Section -->
+
+            <div class="container mt-4 rounded-lg shadow-md">
+                <div class="py-4 bg-gradient-to-r rounded-t-lg from-cyan-500"></div>
+
+                <div class="container py-4 px-16 flex items-center justify-between">
+                    <p class="text-cyan-500 text-xl font-semibold">
+                        Profile
+                    </p>
+                    <!-- Buttons -->
+                    <div class="flex justify-end space-x-4 mt-4">
+                        <button id="changePasswordBtn"
+                            class="border border-cyan-500 text-cyan-500 px-4 py-2 rounded">Change Password</button>
+                        <button id="editProfileBtn" class="bg-cyan-500 text-white px-4 py-2 rounded">Edit</button>
+                        <button id="cancelEditBtn"
+                            class="bg-gray-400 text-white px-4 py-2 rounded hidden">Cancel</button>
+                    </div>
+                </div>
+
+
+                <!-- Profile Details -->
+                <div class="py-4 px-16 mt-4 lg:mt-0 lg:w-2/3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Institution Name -->
+                    <div>
+                        <p class="text-gray-700">Institution Name:</p>
+                        <span class="font-semibold block" id="institutionText">{{ user.institution_name }}</span>
+                        <input type="text" id="institution" value="{{ user.institution_name }}"
+                            class="shadow border-0 text-sm p-2 rounded-md hidden w-full" />
+                    </div>
+
+                    <!-- Enrollment Date -->
+                    <div>
+                        <p class="text-gray-700">Enrollment Date:</p>
+                        <span class="font-semibold block" id="enrollmentText">
+                            {{ user.enrolment_date.strftime('%d %B %Y') if user else 'N/A' }}
+                        </span>
+                    </div>
+
+                    <!-- Contact Number -->
+                    <div>
+                        <p class="text-gray-700">Contact Number:</p>
+                        <span class="font-semibold block" id="phoneText">{{ user.contact_no }}</span>
+                        <input type="text" id="phone" value="{{ user.contact_no }}"
+                            class="shadow border-0 text-sm p-2 rounded-md hidden w-full" />
+                        <button id="sendOtpButton" onclick="sendMobileOtp(event)"
+                            class="text-cyan-600 underline mt-2 hidden">Verify</button>
+                    </div>
+
+                    <!-- Email Address -->
+                    <div>
+                        <p class="text-gray-700">Email Address:</p>
+                        <span class="font-semibold block">{{ user.email }}</span>
+                        <input type="hidden" id="userEmail" value="{{ user.email }}">
+                    </div>
+
+                    <!-- Plan Details -->
+                    <div>
+                        <p class="text-gray-700">Your Plan:</p>
+                        <span class="font-semibold block">
+                            {% if plan %}
+                            {{ plan.plan_name }} - ₹{{ plan.cost }}
+                            {% else %}
+                            No Plan Found
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Subscription Status -->
+                    <div>
+                        <p class="text-gray-700">Status:</p>
+                        <span class="font-semibold block">
+                            {% if subscription and subscription.status %}
+                            Active
+                            {% else %}
+                            Inactive
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Address -->
+                    <div>
+                        <p class="text-gray-700">Address:</p>
+                        <span class="font-semibold block" id="addressText">{{ user.address or 'N/A' }}</span>
+                        <input type="text" id="address" value="{{ user.address }}"
+                            class="shadow border-0 text-sm p-2 rounded-md hidden w-full" />
+                    </div>
+
+                    <!-- Number of Students -->
+                    <div>
+                        <p class="text-gray-700">Number of Students:</p>
+                        <span class="font-semibold block">{{ inst_student_count }}</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Phone OTP Modal -->
+            <div id="phoneOtpModal"
+                class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div class="bg-white p-6 rounded-lg w-80">
+                    <h2 class="text-xl font-semibold mb-4">Verify Phone Number</h2>
+                    <p>OTP sent to <span id="otpPhoneNumber"></span></p>
+                    <input type="text" id="otpInput" class="border p-2 w-full rounded mt-3" placeholder="Enter OTP">
+                    <div class="flex justify-end space-x-2 mt-3">
+                        <button type="button" onclick="closeOtpModal()" class="px-4 py-2 border rounded">Cancel</button>
+                        <button onclick="verifyMobileOTP()"
+                            class="px-4 py-2 bg-cyan-500 text-white rounded">Verify</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- * RESET PWD modal -->
+            <div id="reset-pwd-modal"
+                class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="flex flex-col justify-center items-center mb-6">
+                        <img class="pb-6" src="{{ url_for('static', filename='images/new-pwd.svg') }}" alt="" width="64"
+                            height="64">
+                        <h2 class="text-2xl font-semibold pb-2">Change password</h2>
+                        <p class="text-gray-600">We recommend change of password every 3 months to ensure security</p>
+                    </div>
+                    <form id="reset-password-form" action="{{ url_for('reset_password') }}" method="post"
+                        class="flex flex-col items-center justify-center">
+                        <div class="mb-4">
+                            <label for="password" class="block text-lg font-medium text-gray-700">New Password</label>
+                            <input type="password" id="password" name="password"
+                                class="mt-1 block w-[500px] h-[54px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                placeholder="Enter your new password" required>
+                        </div>
+                        <div class="mb-6">
+                            <label for="confirm-password" class="block text-lg font-medium text-gray-700">Confirm
+                                Password</label>
+                            <input type="password" id="confirm-password" name="confirm-password"
+                                class="mt-1 block w-[500px] h-[54px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                placeholder="Re-enter your new password" required>
+                        </div>
+                        <div class="mb-6 flex flex-row justify-evenly space-x-4 w-full">
+                            <div class="flex items-center justify-center">
+                                <img class="w-[6vw]"
+                                    src="{{ url_for('static', filename='images/Profile/pwdLock.svg') }}"
+                                    alt="Lock Icon">
+                            </div>
+
+                            <div class="flex flex-col items-start justify-center">
+                                <p class="text-gray-700 font-medium">Password should have at least</p>
+                                <div class="grid grid-cols-2 gap-x-6 text-sm text-gray-600 mt-2">
+                                    <ul class="list-disc space-y-1">
+                                        <li>1 Upper Case</li>
+                                        <li>1 Lower Case</li>
+                                        <li>1 Number</li>
+                                    </ul>
+                                    <ul class="list-disc space-y-1">
+                                        <li>1 Special Character</li>
+                                        <li>Min Size 8 Characters</li>
+                                        <li>Max. 18 Characters</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-evenly pt-2 w-full">
+                            <button type="button" id="cancel-reset-btn"
+                                class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+                                style="width:200px; height: 46px;">Cancel</button>
+                            <button type="submit" id="update-password-btn"
+                                class="py-2 mr-8 px-4 border border-transparent rounded-md shadow-sm text-l font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                style="width:200px; height: 46px; background-color: var(--links-color);">Update
+                                Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RESET PWD SUCCESS modal -->
+            <div id="success-rest-pwd-modal"
+                class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                <div class="bg-white p-8 rounded-lg shadow-lg w-[80%] md:w-[35%]">
+                    <div class="text-center mb-6">
+                        <img src="{{ url_for('static', filename='images/tick.svg') }}" alt="Success" width="95"
+                            height="95">
+                        <h2 class="text-2xl font-semibold pb-2">Successful</h2>
+                        <p class="text-gray-600">Your Password has been updated!</p>
+                    </div>
+                    <div class="flex justify-center pt-8 pb-4">
+                        <button id="close-success-modal-btn" type="button"
+                            class="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-l font-medium text-gray-700 bg-white border-2 border-sky-300"
+                            style="width:200px; height: 46px; color: var(--links-color);">Back</button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+    <script>
+
+        // #region change password
+        var password = document.getElementById("password")
+        var confirm_password = document.getElementById("confirm-password");
+
+        function validatePassword() {
+            if (password.value != confirm_password.value) {
+                confirm_password.setCustomValidity("Passwords Don't Match");
+            } else {
+                confirm_password.setCustomValidity('');
+            }
+        }
+
+        password.onchange = validatePassword;
+        confirm_password.onkeyup = validatePassword;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const changePasswordLink = document.getElementById("changePasswordBtn");
+            const resetPwdModal = document.getElementById("reset-pwd-modal");
+            const resetPasswordForm = document.getElementById("reset-password-form");
+
+            // Close the modal on 'cancel' button click     
+            document.getElementById('cancel-reset-btn').addEventListener('click', function () {
+                resetPwdModal.classList.add('hidden');
+            });
+
+            // Show the forgot password modal
+            changePasswordLink.addEventListener("click", function (event) {
+                event.preventDefault();
+                resetPwdModal.classList.remove("hidden");
+            });
+
+            // Close the modal when clicking outside of it
+            window.addEventListener("click", function (event) {
+                if (event.target === resetPwdModal) {
+                    resetPwdModal.classList.add("hidden");
+                }
+            });
+
+            // Handle the reset password form submission
+            resetPasswordForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                const email = document.getElementById("userEmail").value;
+                const password = document.getElementById("password").value;
+
+                fetch("/reset_password", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email: email, password: password })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            //alert("Password updated successfully!");
+                            document.getElementById("success-rest-pwd-modal").classList.remove("hidden");
+                            resetPwdModal.classList.add("hidden");
+                        }
+                        else if (data.message) {
+                            alert(data.message);
+                        }
+                        else {
+                            alert("Error updating password. Please logout and try again.");
+                        }
+                    })
+                    .catch(error => {
+                        // console.error("Error:", error);
+                        alert("An unexpected error occurred. Please try again.");
+                    });
+            });
+
+            // Close the success modal on 'Back' button click     
+            document.getElementById('close-success-modal-btn').addEventListener('click', function () {
+                var modal = document.getElementById('success-rest-pwd-modal');
+                modal.classList.add('hidden');
+            });
+        });
+
+        // #endregion
+
+        // #region profile
+
+        document.getElementById("editProfileBtn").addEventListener("click", function () {
+
+            let isEditing = this.textContent === "Save";
+            this.textContent = isEditing ? "Edit" : "Save";
+
+
+            if (isEditing) {
+                saveProfileData();
+            }
+            else {
+                // Toggle "Cancel" button visibility
+                let cancelBtn = document.getElementById("cancelEditBtn");
+                cancelBtn.classList.toggle("hidden", isEditing);
+
+                // Toggle between text display and input fields
+                let fields = ["institution", "phone", "address"];
+                fields.forEach(field => {
+                    let input = document.getElementById(field);
+                    let text = document.getElementById(field + "Text");
+
+                    if (input && text) {
+                        if (isEditing) {
+                            text.classList.remove("hidden");
+                            input.classList.add("hidden");
+                            input.value = text.textContent.trim(); // Reset input value to original
+                        } else {
+                            text.classList.add("hidden");
+                            input.classList.remove("hidden");
+                        }
+                    }
+                });
+
+                // Show "Verify" button for phone only when editing
+                let verifyButton = document.getElementById("sendOtpButton");
+                if (verifyButton) {
+                    verifyButton.classList.toggle("hidden", isEditing);
+                }
+
+            }
+        });
+
+        function saveProfileData() {
+            let profileData = {
+                institution: document.getElementById("institution").value,
+                phone: document.getElementById("phone").value,
+                address: document.getElementById("address").value
+            };
+
+            fetch("/saveinstprofile", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(profileData),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Profile updated successfully!");
+                        location.reload(); // Refresh to show updated data
+                    } else {
+                        alert("Error updating profile. Please try again.");
+                    }
+                })
+                .catch(error => {
+                    // console.error("Error:", error);
+                });
+        }
+
+        // Cancel Button: Revert to original state
+        document.getElementById("cancelEditBtn").addEventListener("click", function () {
+            let editBtn = document.getElementById("editProfileBtn");
+            editBtn.textContent = "Edit"; // Reset button text
+
+            // Hide "Cancel" button
+            this.classList.add("hidden");
+
+            // Reset input fields & show original text
+            let fields = ["institution", "phone", "address"];
+            fields.forEach(field => {
+                let input = document.getElementById(field);
+                let text = document.getElementById(field + "Text");
+
+                if (input && text) {
+                    text.classList.remove("hidden");
+                    input.classList.add("hidden");
+                    input.value = text.textContent; // Restore original value
+                }
+            });
+
+            // Hide the "Verify" button for phone
+            let verifyButton = document.getElementById("sendOtpButton");
+            if (verifyButton) {
+                verifyButton.classList.add("hidden");
+            }
+        });
+
+        // Function to format 'DD Month YYYY' (e.g., 15 August 1995) to 'YYYY-MM-DD' for date input
+        function formatDateToYYYYMMDD(dateString) {
+            const months = {
+                "January": "01", "February": "02", "March": "03", "April": "04",
+                "May": "05", "June": "06", "July": "07", "August": "08",
+                "September": "09", "October": "10", "November": "11", "December": "12"
+            };
+            let parts = dateString.split(" ");
+            if (parts.length === 3) {
+                let day = parts[0].padStart(2, "0"); // Ensure two-digit day
+                let month = months[parts[1]]; // Convert month name to number
+                let year = parts[2];
+                return `${year}-${month}-${day}`;
+            }
+            return ""; // Return empty if parsing fails
+        }
+
+        function sendMobileOtp(event) {
+            event.preventDefault();
+            const phone = document.getElementById("phone").value;
+
+            fetch("/sendMobileOTP", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone: phone })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("otpPhoneNumber").textContent = phone;
+                        document.getElementById("phoneOtpModal").classList.remove("hidden");
+                    } else {
+                        alert("Failed to send OTP. Try again.");
+                    }
+                })
+        }
+
+        function verifyMobileOTP() {
+            const otp = document.getElementById("otpInput").value;
+            const phone = document.getElementById("otpPhoneNumber").textContent;
+
+            fetch("/verifyMobileOTP", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ phone: phone, otp: otp })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Phone Verified Successfully!");
+                        closeOtpModal();
+                    } else {
+                        alert("Invalid OTP. Try again.");
+                    }
+                })
+        }
+
+        function closeOtpModal() {
+            document.getElementById("phoneOtpModal").classList.add("hidden");
+        }
+
+        // #endregion
+
+    </script>
+
+</body>
+
+</html>

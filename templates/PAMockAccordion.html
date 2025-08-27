@@ -1,0 +1,119 @@
+<!-- Accordion -->
+<div id="accordion-container" class="container pt-4 p-4">
+    <!-- Completed Section Header -->
+    <div class="container pt-8 pb-2">
+        <div class="flex flex-col md:flex-row justify-between">
+            <h1 class="font-bold mt-2" style="color: var(--links-color);">Completed
+                ({{(exam_attempt_details_completed|default([])|length)}})
+            </h1>
+        </div>
+    </div>
+
+    <!-- Completed Section Accordion -->
+    <div id="accordion-collapse" class="mt-4 overflow-y-auto space-y-4" data-accordion="collapse">
+        {% for exam_id, attempts in exam_attempt_details_completed.items() %}
+        <h2 id="accordion-collapse-heading-mock-{{ exam_id }}">
+            <button type="button"
+                class="flex items-center justify-between w-full p-5 font-medium text-gray-500 border border-gray-200 bg-white rounded-lg shadow-md gap-3"
+                data-accordion-target="#accordion-collapse-body-mock-{{ exam_id }}" aria-expanded="false"
+                aria-controls="accordion-collapse-body-mock-{{ exam_id }}">
+                <span>{{ attempts[0]['exam_name'] }} ({{ attempts|length }})</span>
+                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5 5 1 1 5" />
+                </svg>
+            </button>
+        </h2>
+        <div id="accordion-collapse-body-mock-{{ exam_id }}" class="hidden"
+            aria-labelledby="accordion-collapse-heading-mock-{{ exam_id }}">
+            <div class="p-5 bg-gray-50 rounded-lg shadow-md">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for attempt in attempts %}
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h5 class="text-gray-600 font-medium font-semibold mb-3">Mock Test {{ attempt['attempt_id'] }}</h2>
+                        <p class="leading-relaxed text-base text-gray-600">
+                            <!-- Attempt ID: <span class="font-semibold">{{ attempt['attempt_id'] }}</span> <br /> -->
+                            Completed on: <span class="font-semibold">{{ attempt['date'].strftime('%d %b %Y') }}</span>
+                            <br />
+                            Difficulty Level: <span class="{% if attempt['exam_difficulty'] == 'easy' %}text-green-600
+              {% elif attempt['exam_difficulty'] == 'medium' %}text-yellow-600
+              {% elif attempt['exam_difficulty'] == 'difficult' %}text-red-600
+              {% else %}text-gray-600{% endif %}">{{ attempt['exam_difficulty']|upper }}</span> <br />
+                            Score: <span class="font-semibold">{{ attempt['score'] }}</span> <br />
+                            Max Score: <span class="font-semibold">{{ attempt['max_score'] }}</span> <br />
+                        </p>
+                        <!-- <div id="viewReportButton-{{loop.index}}" class="viewReportButton"
+                            data-attempt-id="{{ attempt['attempt_id'] }}">
+                            <button id="navigateToReport"
+                                class="mt-3 bg-white text-blue-600 border border-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg w-full"
+                                style="border-color: var(--links-color); color: var(--links-color);">
+                                View Report
+                            </button>
+                        </div> -->
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Incomplete Section Header -->
+    <div class="container pt-8 pb-2">
+        <div class="flex flex-row justify-between">
+            <h1 class="font-bold mt-2" style="color: var(--links-color);">Partially Completed
+                ({{(exam_attempt_details_incomplete|default([])|length)}})</h1>
+        </div>
+    </div>
+
+    <!-- Incomplete Section Accordion -->
+    <div id="accordion-collapse" class="mt-4 overflow-y-auto space-y-4" data-accordion="collapse">
+        {% for exam_id, attempts in exam_attempt_details_incomplete.items() %}
+        <h2 id="accordion-collapse-heading-mock-{{ exam_id }}">
+            <button type="button"
+                class="flex items-center justify-between w-full p-5 font-medium text-gray-500 border border-gray-200 bg-white rounded-lg shadow-md gap-3"
+                data-accordion-target="#accordion-collapse-body-incomplete-mock-{{ exam_id }}" aria-expanded="false"
+                aria-controls="accordion-collapse-body-incomplete-mock-{{ exam_id }}">
+                <span>{{ attempts[0]['exam_name'] }} ({{ attempts|length }})</span>
+                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5 5 1 1 5" />
+                </svg>
+            </button>
+        </h2>
+        <div id="accordion-collapse-body-incomplete-mock-{{ exam_id }}" class="hidden"
+            aria-labelledby="accordion-collapse-heading-mock-{{ exam_id }}">
+            <div class="p-5 bg-gray-50 rounded-lg shadow-md">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for attempt in attempts %}
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h5 class="text-gray-600 font-medium font-semibold mb-3">Mock Test {{ attempt['attempt_id'] }}</h2>
+                        <p class="leading-relaxed text-base text-gray-600 mb-3">
+                            <!-- Attempt ID: <span class="font-semibold">{{ attempt['attempt_id'] }}</span> <br /> -->
+                            Completed on: <span class="font-semibold">{{ attempt['date'].strftime('%d %b %Y') }}</span>
+                            <br />
+                            Difficulty Level: <span class="{% if attempt['exam_difficulty'] == 'easy' %}text-green-600
+                        {% elif attempt['exam_difficulty'] == 'medium' %}text-yellow-600
+                        {% elif attempt['exam_difficulty'] == 'difficult' %}text-red-600
+                        {% else %}text-gray-600{% endif %}">{{ attempt['exam_difficulty']|upper }}</span> <br />
+                            Questions Attempted: <span class="font-semibold">{{ attempt['attempted_count'] }}/{{
+                                attempt['total_count'] }}</span> <br />
+                        </p>
+                        <!-- <form action="{{ url_for('mockTest') }}" method="POST">
+                            <input type="hidden" name="attempt_id" value="{{ attempt['attempt_id'] }}">
+                            <button type="submit"
+                                class="mt-3 bg-white text-blue-600 border border-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg w-full"
+                                style="border-color: var(--links-color); color: var(--links-color);">
+                                Continue
+                            </button>
+                        </form> -->
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

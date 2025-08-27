@@ -1,0 +1,154 @@
+<div id="calendar-container" class="max-w-lg mx-auto">
+    <!-- Header with month and year navigation -->
+    <div class="flex justify-between items-center my-4">
+        <button id="prev-month" class="text-gray-600">&lt;</button>
+        <h2 id="current-month" class="text-lg font-semibold"></h2>
+        <button id="next-month" class="text-gray-600">&gt;</button>
+    </div>
+
+    <!-- Calendar grid -->
+    <div class="grid grid-cols-7 gap-2 text-center pt-4">
+        <!-- Weekday headers -->
+        <div class="text-gray-500 font-medium">Sun</div>
+        <div class="text-gray-500 font-medium">Mon</div>
+        <div class="text-gray-500 font-medium">Tue</div>
+        <div class="text-gray-500 font-medium">Wed</div>
+        <div class="text-gray-500 font-medium">Thu</div>
+        <div class="text-gray-500 font-medium">Fri</div>
+        <div class="text-gray-500 font-medium">Sat</div>
+    </div>
+
+    <div class="h-0.5 bg-gray-100 mt-2"></div>
+
+    <!-- Days will be dynamically rendered -->
+    <div id="calendar-days" class="grid grid-cols-7 gap-2 text-center pt-4"
+        data-daily-schedule-dates="{{ daily_schedule_dates }}"></div>
+
+    <div class="flex flex-row items-center justify-center my-6">
+        <div class="w-4 h-4 bg-cyan-500 rounded-full mr-2"></div>
+        <div>Test Scheduled</div>
+    </div>
+
+</div>
+
+<style>
+    .highlight-today {
+        border: 2px dashed black;
+    }
+body,
+    .font-sans {
+        font-family: 'Inter', sans-serif !important;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const calendarContainer = document.getElementById("calendar-container");
+        const currentMonthDisplay = document.getElementById("current-month");
+        const calendarDaysContainer = document.getElementById("calendar-days");
+        const prevMonthButton = document.getElementById("prev-month");
+        const nextMonthButton = document.getElementById("next-month");
+
+        let today = new Date();
+        let currentMonth = today.getMonth(); // 0-based (January is 0)
+        let currentYear = today.getFullYear();
+
+        // // Example highlighted dates
+        // const highlightedDates = [2, 4, 6];
+
+        // Access the `data-daily-schedule-dates` value
+        const dailyScheduleDates = calendarDaysContainer.dataset.dailyScheduleDates;
+        // Log the result
+        // console.log(dailyScheduleDates);
+        const highlightedDates = dailyScheduleDates;
+
+        // If `daily_schedule_dates` is a JSON-like string, parse it
+        // const scheduleDatesArray = JSON.parse(dailyScheduleDates);
+
+        
+
+        // Function to generate calendar days
+        function generateCalendar(month, year) {
+            // Clear existing calendar days
+            calendarDaysContainer.innerHTML = "";
+
+            // Set current month display
+            const monthNames = [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ];
+            currentMonthDisplay.textContent = `${monthNames[month]} ${year}`;
+
+            // Get first and last day of the month
+            const firstDay = new Date(year, month, 1).getDay(); // Day of the week (0-6)
+            const lastDate = new Date(year, month + 1, 0).getDate(); // Last date of the month
+
+            // Add empty cells for the first row (padding for the first day)
+            // for (let i = 0; i < firstDay; i++) {
+            //     const emptyCell = document.createElement("div");
+            //     calendarDaysContainer.appendChild(emptyCell);
+            // }
+
+            // Add cells for each day of the month
+            for (let date = 1; date <= lastDate; date++) {
+                const dayCell = document.createElement("div");
+                dayCell.textContent = date;
+                dayCell.className =
+                    "w-12 h-12 rounded-full flex items-center justify-center text-gray-700";
+
+                // Highlight today
+                if (
+                    date === today.getDate() &&
+                    month === today.getMonth() &&
+                    year === today.getFullYear()
+                ) {
+                    dayCell.classList.add("highlight-today");
+                }
+
+                const currentDate = new Date(year, month, date);
+                const currentDateString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, "0")}-${String(currentDate.getDate()).padStart(2, "0")}`;
+
+                // Highlight specified dates
+                if (highlightedDates.includes(currentDateString)) {
+                    dayCell.classList.add("bg-cyan-500", "text-white");
+                    dayCell.classList.remove("text-gray-700")
+                }
+
+                calendarDaysContainer.appendChild(dayCell);
+            }
+        }
+
+        // Event listeners for navigation
+        prevMonthButton.addEventListener("click", function () {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar(currentMonth, currentYear);
+        });
+
+        nextMonthButton.addEventListener("click", function () {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar(currentMonth, currentYear);
+        });
+
+        // Generate the calendar for the current month
+        generateCalendar(currentMonth, currentYear);
+    });
+
+</script>
