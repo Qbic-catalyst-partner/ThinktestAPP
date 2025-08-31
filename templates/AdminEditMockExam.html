@@ -41,7 +41,8 @@
         /* Tailwind Green-600 */
         font-weight: 600;
     }
-body,
+
+    body,
     .font-sans {
         font-family: 'Inter', sans-serif !important;
     }
@@ -174,13 +175,22 @@ body,
 
         document.getElementById('mockExamForm').addEventListener('submit', function (e) {
             e.preventDefault();
+            const container = document.getElementById('subjectConfigs');
+            const ALLOWED = new Set(['1', '2', '3', '4', '5']);
             const config = {};
-            document.querySelectorAll('[data-subject-id]').forEach(input => {
-                const sid = input.dataset.subjectId;
-                const level = input.dataset.level;
-                if (!config[sid]) config[sid] = {};
-                config[sid][level] = parseInt(input.value || '0');
-            });
+
+            container
+                .querySelectorAll('input[data-subject-id][data-level]:not([disabled])')
+                .forEach(input => {
+                    const sid = input.dataset.subjectId?.trim();
+                    const lvl = input.dataset.level?.trim();
+                    if (!sid || !ALLOWED.has(lvl)) return;
+
+                    if (!config[sid]) config[sid] = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+
+                    const v = parseInt(input.value, 10);
+                    config[sid][lvl] = Number.isFinite(v) && v >= 0 ? v : 0;
+                });
 
             const formData = new FormData();
             formData.append('name', document.getElementById('name').value);
