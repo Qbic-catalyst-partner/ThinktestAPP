@@ -829,7 +829,7 @@ def loginPage():
         email = request.form['email']
         password = request.form['password'] 
         login = Login.query.filter_by(email=email).first()
-        student = Student.query.filter_by(student_id = login.student_id).first()
+        student = Student.query.filter_by(email=email).first()
         institution = InstitutionLogin.query.filter_by(email=email).first()
         admin=AdminLogin.query.filter_by(email=email).first()
         current_utc_time = datetime.now(timezone.utc)
@@ -862,7 +862,7 @@ def loginPage():
                     return redirect(url_for('dashboard'))
                 elif (not(subscription.status) and subscription.end_date>=today) or (subscription.end_date<today and student.institution_id):
                     return render_template('Login.html', user="student", plans=plans, student=login, 
-                    razorpaykey = app.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=False, show_subscription_inactive_modal = True, 
+                    razorpaykey = application.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=False, show_subscription_inactive_modal = True, 
                     show_incorrect_password_modal=False, show_email_not_registered_modal=False)
                 elif (subscription.end_date<today and student.institution_id is None):
                     expiry_date = (
@@ -871,7 +871,7 @@ def loginPage():
                         else 'N/A'
                     )                    
                     return render_template('Login.html', user="student", plans=plans, student=login, 
-                    razorpaykey = app.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=True, 
+                    razorpaykey = application.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=True, 
                     show_subscription_inactive_modal = False , expiry_date=expiry_date, show_incorrect_password_modal=False, show_email_not_registered_modal=False)
             else:
                 return render_template('Login.html', user="student", plans=[], student={}, show_subscription_expired_modal=False, show_incorrect_password_modal=True, show_email_not_registered_modal=False)
