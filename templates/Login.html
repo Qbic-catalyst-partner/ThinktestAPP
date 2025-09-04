@@ -422,11 +422,13 @@
       </div>
       <div class="text-left px-28 py-4">
         {% for plan in plans %}
+        {% if plan.cost != 0 %}
         <label class="block mb-4">
           <input type="radio" name="plan" class="mr-2" data-amount="{{ plan.cost|int * 100 }}"
             data-desc="{{ plan.name }}" data-plan-id="{{ plan.id }}">
           {{ plan.name }} - ₹{{ "{:,.2f}".format(plan.cost) }}
         </label>
+        {% endif %}
         {% endfor %}
       </div>
       <div id="error-message" class="text-center text-red-500 mb-4 hidden">Please select any one of the above plans to

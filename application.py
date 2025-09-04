@@ -828,45 +828,50 @@ def loginPage():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password'] 
-        student = Login.query.filter_by(email=email).first()
+        login = Login.query.filter_by(email=email).first()
+        student = Student.query.filter_by(student_id = login.student_id).first()
         institution = InstitutionLogin.query.filter_by(email=email).first()
         admin=AdminLogin.query.filter_by(email=email).first()
         current_utc_time = datetime.now(timezone.utc)
         today = current_utc_time.date()
 
-        if student:
-            deactivate_expired_subscriptions(student.student_id)
+        if login:
+            deactivate_expired_subscriptions(login.student_id)
             plans = [
                     {'id': p.plan_id, 'name': p.plan_name, 'cost': p.cost}
                     for p in db.session.query(PaymentPlanDetail).all()
                     ]
-            if check_password_hash(student.password, password):
+            if check_password_hash(login.password, password):
                 # Check subscription status
                 # First, try to get the one with the latest non-null end_date
                 subscription = Subscription.query.filter(
-                    Subscription.student_id == student.student_id,
+                    Subscription.student_id == login.student_id,
                     Subscription.end_date.isnot(None)
                 ).order_by(Subscription.end_date.desc()).first()
 
                 # If none found, fallback to one with end_date = None
                 if not subscription:
                     subscription = Subscription.query.filter(
-                        Subscription.student_id == student.student_id,
+                        Subscription.student_id == login.student_id,
                         Subscription.end_date.is_(None)
                     ).first()
 
                 if subscription and subscription.status and (subscription.end_date>=today or subscription.end_date==None):
-                    session['user_id'] = student.student_id                    
+                    session['user_id'] = login.student_id                    
                     verified_emails[email] = True
                     return redirect(url_for('dashboard'))
-                elif (not subscription.status) or (subscription.end_date<today and student.institution_id):
-                    return render_template('Login.html', user="student", plans=plans, student=student, 
-                    razorpaykey = application.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=False, show_subscription_inactive_modal = True, 
+                elif (not(subscription.status) and subscription.end_date>=today) or (subscription.end_date<today and student.institution_id):
+                    return render_template('Login.html', user="student", plans=plans, student=login, 
+                    razorpaykey = app.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=False, show_subscription_inactive_modal = True, 
                     show_incorrect_password_modal=False, show_email_not_registered_modal=False)
-                else:
-                    expiry_date = subscription.end_date.strftime('%d %B %Y') if subscription and subscription.end_date.isnot(None) else 'N/A'                    
-                    return render_template('Login.html', user="student", plans=plans, student=student, 
-                    razorpaykey = application.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=True, 
+                elif (subscription.end_date<today and student.institution_id is None):
+                    expiry_date = (
+                        subscription.end_date.strftime('%d %B %Y')
+                        if subscription and subscription.end_date is not None
+                        else 'N/A'
+                    )                    
+                    return render_template('Login.html', user="student", plans=plans, student=login, 
+                    razorpaykey = app.config['RAZORPAY_ACCESS_KEY_ID'], show_subscription_expired_modal=True, 
                     show_subscription_inactive_modal = False , expiry_date=expiry_date, show_incorrect_password_modal=False, show_email_not_registered_modal=False)
             else:
                 return render_template('Login.html', user="student", plans=[], student={}, show_subscription_expired_modal=False, show_incorrect_password_modal=True, show_email_not_registered_modal=False)

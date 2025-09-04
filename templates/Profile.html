@@ -360,24 +360,15 @@
                                 Please select a plan to continue
                         </p>
                     </div>
-                    <!-- <div class="text-left px-28 py-4">
-                        <label class="block mb-4">
-                            <input type="radio" name="plan" class="mr-2"> 3 Months Plan - ₹ 5,000.00
-                        </label>
-                        <label class="block mb-4">
-                            <input type="radio" name="plan" class="mr-2"> 6 Months Plan - ₹ 8,000.00
-                        </label>
-                        <label class="block mb-4">
-                            <input type="radio" name="plan" class="mr-2"> 12 Months Plan - ₹ 10,000.00
-                        </label>
-                    </div> -->
                     <div class="text-left px-28 py-4">
                         {% for plan in plans %}
+                        {% if plan.cost != 0 %}
                         <label class="block mb-4">
                             <input type="radio" name="plan" class="mr-2" data-amount="{{ plan.cost|int * 100 }}"
                                 data-desc="{{ plan.name }}" data-plan-id="{{ plan.id }}">
                             {{ plan.name }} - ₹{{ "{:,.2f}".format(plan.cost) }}
                         </label>
+                        {% endif %}
                         {% endfor %}
                     </div>
                     <div id="error-message" class="text-center text-red-500 mb-4 hidden">Please select any one of the
