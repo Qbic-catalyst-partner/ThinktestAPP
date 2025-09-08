@@ -6,26 +6,38 @@ mocktest_config_table = "config"
 question_table = "question"
 upper_difficulty_level = 5
 
-database = psycopg2.connect(
-    dbname="thinktestdb",
-    user="Thinktest",
-    password="Thinktest2025",
-    host="thinktestsdb.c3sk8iamux7s.ap-south-1.rds.amazonaws.com",
-    port="5432"
-)
+# --- NEW: on-demand connector with keepalives ---
+database = None
+def get_db():
+    global database
+    if database is None or database.closed != 0:
+        database = psycopg2.connect(
+            dbname="thinktestdb",
+            user="Thinktest",
+            password="Thinktest2025",
+            host="thinktestsdb.c3sk8iamux7s.ap-south-1.rds.amazonaws.com",
+            port="5432",
+            connect_timeout=5,
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5,
+        )
+        database.autocommit = True
+    return database
 
 def executeQuery(query):
-    # Connect to the PostgreSQL database
-    cursor = database.cursor()
-
-    # Set the schema search path
-    # cursor.execute("SET search_path TO "+mocktest_schema)
-    
-    #Execute query    
-    cursor.execute(query)
-    df = cursor.fetchall()
-    cursor.close()
-    return df
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            return cursor.fetchall()
+    except psycopg2.OperationalError:
+        # connection likely dropped; reconnect once and retry
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            return cursor.fetchall()
 
 def fetchMockTestQuestions(exam_name,exam_id):
 

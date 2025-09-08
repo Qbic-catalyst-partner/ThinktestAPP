@@ -8,23 +8,38 @@ modules_table = "modules"
 custommodules_schema = "custommodules"
 config_table = "config"
 
-database = psycopg2.connect(
-    dbname="thinktestdb",
-    user="Thinktest",
-    password="Thinktest2025",
-    host="thinktestsdb.c3sk8iamux7s.ap-south-1.rds.amazonaws.com",
-    port="5432"
-)
+# --- NEW: on-demand connector with keepalives ---
+database = None
+def get_db():
+    global database
+    if database is None or database.closed != 0:
+        database = psycopg2.connect(
+            dbname="thinktestdb",
+            user="Thinktest",
+            password="Thinktest2025",
+            host="thinktestsdb.c3sk8iamux7s.ap-south-1.rds.amazonaws.com",
+            port="5432",
+            connect_timeout=5,
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5,
+        )
+        database.autocommit = True
+    return database
 
 def executeQuery(query):
-    # Connect to the PostgreSQL database
-    cursor = database.cursor()
-
-    #Execute query    
-    cursor.execute(query)
-    df = cursor.fetchall()
-    cursor.close()
-    return df
+    conn = get_db()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            return cursor.fetchall()
+    except psycopg2.OperationalError:
+        # connection likely dropped; reconnect once and retry
+        conn = get_db()
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            return cursor.fetchall()
 
 def fetchCustomModuleQuestions_for_attempt(attempt_id):
     # Fetch all config_id associated with the given attempt_id
@@ -57,10 +72,11 @@ def fetchCustomModuleQuestions_for_attempt(attempt_id):
                 'direction_id': result[1],
                 'question_description': result[2],
                 'answer_options': result[3],
-                'max_score': result[4],
-                'correct_option': result[5],
-                'solution_explanation': result[6],
-                'multi_select': result[7],    
+                'choice_type': result[4],
+                'max_score': result[5],
+                'correct_option': result[6],
+                'solution_explanation': result[7], 
+                'multi_select': result[8],    
             }
             selected_questions.append(questions)
 

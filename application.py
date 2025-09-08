@@ -57,7 +57,7 @@ db = SQLAlchemy(application)
 
 s3 = boto3.client('s3')
 
-BUCKET_NAME = 'thinktestsimages'
+BUCKET_NAME = 'thinksmithss3bucket'
 
 razorpay_client = razorpay.Client(auth=(
     application.config['RAZORPAY_ACCESS_KEY_ID'],
@@ -94,11 +94,6 @@ class Student(db.Model):
     institution_id = db.Column(db.Integer, db.ForeignKey('registration.Institution.institution_id', ondelete='SET NULL'), nullable=True)
     enrolment_date = db.Column(db.Date, nullable=False)
 
-    # Relationships
-    # subscriptions = db.relationship('Subscription', backref='student', passive_deletes=True)
-    # Relationship to the last_subscription if needed:
-    # last_sub = db.relationship('Subscription', foreign_keys=[last_subscription], post_update=True)
-
 class Subscription(db.Model):
     __tablename__ = 'subscription'
     __table_args__ = {'schema': 'registration'}
@@ -110,9 +105,6 @@ class Subscription(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     plan_id = db.Column(db.Integer, db.ForeignKey('paymentplans.paymentplandetails.plan_id', ondelete='SET NULL'), nullable=True)
 
-    # Relationships
-    # plan = db.relationship('PaymentPlanDetail', backref='subscriptions')
-
 class PaymentPlanDetail(db.Model):
     __tablename__ = 'paymentplandetails'
     __table_args__ = {'schema': 'paymentplans'}
@@ -121,9 +113,6 @@ class PaymentPlanDetail(db.Model):
     plan_name = db.Column(db.String(50), nullable=False)
     duration = db.Column(db.Interval, nullable=False)
     cost = db.Column(db.Numeric(10, 2), nullable=False)
-
-    # Define relationships
-    # subscriptions = db.relationship('Subscription', backref='plan')
 
 class InstitutionLogin(db.Model):
     __tablename__ = 'InstitutionLogin'
@@ -164,13 +153,7 @@ class InstitutionSubscription(db.Model):
 
     subscription_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     institution_id = db.Column(db.Integer, db.ForeignKey('registration.Institution.institution_id'), nullable=False)
-    status = db.Column(db.Boolean, nullable=False, default=True)  # True = Active, False = Inactive
-    # start_date = db.Column(db.Date, nullable=False)
-    # end_date = db.Column(db.Date, nullable=False)
-    # plan_id = db.Column(db.Integer, db.ForeignKey('paymentplans.paymentplandetails.plan_id'), nullable=False)
-
-    # # Relationship
-    # plan = db.relationship('PaymentPlanDetail', backref='institution_subscriptions', lazy=True)
+    status = db.Column(db.Boolean, nullable=False, default=True)
 
 class Direction(db.Model):
     __tablename__ = 'direction'
@@ -195,7 +178,6 @@ class Module(db.Model):
 
     module_id = db.Column(db.Integer, Sequence('module_module_id_seq', schema='meta'), primary_key=True, autoincrement=True)
     module_name = db.Column(VARCHAR(100), nullable=False)
-    # subject_id = db.Column(db.Integer, db.ForeignKey('meta.subject.subject_id'), nullable=False)
 
 class SubjectModuleMapping(db.Model):
     __tablename__ = 'subject_module_mapping'
@@ -594,12 +576,6 @@ def check_phone():
     result = check_phone_internal(phone)  # Reuse the internal function
     return jsonify(result), 200
 
-# def generate_sms_otp_order_id(prefix='v', length=3):
-#     characters = string.ascii_lowercase + string.digits
-#     random_string = ''.join(random.choice(characters) for _ in range(length))
-#     timestamp = str(int(time.time() * 1000))  # Current time in milliseconds
-#     return prefix + random_string + timestamp
-
 @application.route('/sendMobileOTP', methods=['POST'])
 def sendMobileOTP():
     data = request.get_json()
@@ -613,19 +589,7 @@ def sendMobileOTP():
     if not response['success']:
         return jsonify({'status': 'phone_registered'}), 400
 
-    # Proceed to send OTP
-    # channel = "SMS"
-    # otpLength = "6"
-    # orderId = generate_sms_otp_order_id()
-    # session['orderId'] = orderId
-    # hash = "hash"
-    # expiry = "120"
-    # client_id = application.config['SMS_CLIENT_ID']
-    # client_secret = application.config['SMS_CLIENT_SECRET']
-
     try:
-        # otp_details = OTPLessAuthSDK.OTP.send_otp(email=None, phoneNumber=phoneNumber, channel=channel, hash=hash, orderId=orderId, expiry=expiry, otpLength=otpLength, client_id=client_id, client_secret=client_secret)
-        # print(f"details: {otp_details}")
         url = f"https://2factor.in/API/V1/{API_KEY}/SMS/{phoneNumber}/AUTOGEN/{OTP_TEMPLATE}"
         response = requests.get(url)
         return jsonify({'status': 'success'})
@@ -635,26 +599,11 @@ def sendMobileOTP():
 
 @application.route('/verifyMobileOTP', methods=['GET' ,'POST'])
 def verifyMobileOTP():
-    # orderId = session['orderId']
-    # client_id = application.config['SMS_CLIENT_ID']
-    # client_secret = application.config['SMS_CLIENT_SECRET']
     API_KEY = application.config['TWOFACTOR_API_KEY']
     data = request.get_json()
     phoneNumber = data.get('phone')
     phoneNumberwCode = "+91" + phoneNumber
     otp = data.get('otp')
-    # try:    
-    #     otp_details = OTPLessAuthSDK.OTP.veriy_otp(orderId=orderId,email=None, otp=otp, phoneNumber=phoneNumberwCode, client_id=client_id, client_secret=client_secret)        
-    #     isverified = otp_details['isOTPVerified']
-    #     # if True:
-    #     if isverified:
-    #         verified_phoneNumbers[phoneNumber] = True
-    #         return jsonify(status='success')
-    #     else:
-    #         return jsonify(status='failure')
-    # except Exception as e:
-    #     print(e)
-    #     return jsonify(status='failure')
     url = f"https://2factor.in/API/V1/{API_KEY}/SMS/VERIFY3/{phoneNumberwCode}/{otp}"
 
     try:
@@ -2745,6 +2694,7 @@ def customModuleTest():
             question.correct_option,
             question.solution_explanation,
             question.multi_select,
+            question.choice_type,
             userresponse.selected_option,
             userresponse.question_status
         FROM custommodules.userresponse
@@ -3659,6 +3609,7 @@ def dailyPracticeTest():
             question.correct_option,
             question.solution_explanation,
             question.multi_select,
+            question.choice_type,
             userresponse.selected_option,
             userresponse.question_status
         FROM dailypractice.userresponse
