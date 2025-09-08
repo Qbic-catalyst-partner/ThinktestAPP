@@ -10,7 +10,7 @@ database = psycopg2.connect(
     dbname="thinktestdb",
     user="Thinktest",
     password="Thinktest2025",
-    host="thinktestdb.c8pagqo0ygo1.us-east-1.rds.amazonaws.com",
+    host="thinktestsdb.c3sk8iamux7s.ap-south-1.rds.amazonaws.com",
     port="5432"
 )
 
