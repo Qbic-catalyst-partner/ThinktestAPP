@@ -55,7 +55,7 @@ verified_emails = {}
 verified_phoneNumbers = {}
 db = SQLAlchemy(application)
 
-s3 = boto3.client('s3')
+s3 = boto3.client("s3", region_name="ap-south-1")
 
 BUCKET_NAME = 'thinksmithss3bucket'
 
