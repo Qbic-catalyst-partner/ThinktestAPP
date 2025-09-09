@@ -55,12 +55,7 @@ verified_emails = {}
 verified_phoneNumbers = {}
 db = SQLAlchemy(application)
 
-s3 = boto3.client(
-    's3',
-    aws_access_key_id='AKIASDAWQZ2AIQLWMBAE',
-    aws_secret_access_key='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',
-    region_name='ap-south-1'
-)
+s3 = boto3.client('s3')
 
 BUCKET_NAME = 'thinksmithss3bucket'
 
