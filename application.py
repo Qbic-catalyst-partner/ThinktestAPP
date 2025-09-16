@@ -1589,7 +1589,7 @@ def get_presigned_image_url(filename):
             ExpiresIn=3600
         )
     except Exception as e:
-        # print(f"Could not generate URL for {key}: {e}")
+        print("S3 error:", e.response.get("Error"))
         return None
 
 @application.route('/MockTestInstruction', methods=['POST'])
@@ -3569,8 +3569,7 @@ def dailyPracticeCreateTest():
                 db.session.add(dp_modules_user_response) 
                 q_order+=1
             db.session.commit()
-
-        # return redirect(url_for('dailyPracticeTest', attempt_id=attempt_id))
+        
         return redirect('/DailyPracticeDashboard')
     else:
         flash('Student not logged in.', 'error')
@@ -4294,7 +4293,8 @@ def get_profile_pic_url(student_id):
             Params={'Bucket': BUCKET_NAME, 'Key': key},
             ExpiresIn=3600
         )
-    except:
+    except Exception as e:
+        print("S3 error:", e.response.get("Error"))
         return None
 
 # endregion
@@ -4334,7 +4334,6 @@ def proceed_institution_registration():
         email=email_id,
         contact_no=phone_number,
         password=hashed_password
-        # last_subscription = 
     )
 
     db.session.add(new_institution)
@@ -4363,9 +4362,19 @@ def institutionDashboard():
 
     if not student_ids:
         return render_template('InstitutionDashboard.html',
-                               mock_tests_total_count=0,
-                               daily_practice_total_count=0,
-                               custom_modules_total_count=0)
+                                mock_tests_total_count=0,
+                                daily_practice_total_count=0,
+                                custom_modules_total_count=0,
+                                mock_avg=0,
+                                daily_avg=0,
+                                custom_avg=0,
+                                retPieChartMockData={},
+                                retPieChartDailyData={},
+                                retPieChartCustomData={},
+                                retBarChartData={},
+                                exams={},
+                                top_students=[],
+                                low_students=[])
 
     id_tuple = tuple(student_ids)
 
@@ -4685,21 +4694,6 @@ def examInfoInstitutionDashboard():
 
     return render_template('ExamInfoInstitutionDashboard.html',year_options=year_options,categories=categories_data,exams=exams)
 
-# def filter_exams_inst_logic(year, categories):
-#     # Ensure categories are a valid list and avoid SQL injection risks
-#     if not categories or categories == 'all':
-#         query_all_exams = text("SELECT exam_id, exam_name FROM competitiveexams.exam")
-#         all_filtered_exams = {row[0]: row[1] for row in db.session.execute(query_all_exams).fetchall()}
-#     else:
-#         query_all_exams = text("""
-#             SELECT exam_id, exam_name 
-#             FROM competitiveexams.exam 
-#             WHERE category_id IN :categories
-#         """)
-#         all_filtered_exams = {row[0]: row[1] for row in db.session.execute(query_all_exams, {"categories": tuple(map(int, categories.split(',')))}).fetchall()}
-
-#     return all_filtered_exams
-
 def filter_exams_inst_logic(year, categories):
     filters = []
     params = {}
@@ -4818,8 +4812,43 @@ def performanceAnalysis():
     students = db.session.query(Student.student_id, Student.first_name, Student.last_name).filter_by(institution_id=institution_id).all()
 
     if not students:
-        # print("students yet to be onboarded")
-        return render_template('PerformanceAnalysis.html', students=[], student_name="")
+        return render_template(
+            'PerformanceAnalysis.html',
+            students=[],
+            selected_student_id=None,
+            mocks_completed=0,
+            average_accuracy=0,
+            average_score=0,
+            unique_exams={},
+            exam_attempt_details_completed={},
+            exam_attempt_details_incomplete={},
+            student_name="",
+            exams_targeted=0,
+            dp_attempt_details_completed={},
+            dp_attempt_details_incomplete={},
+            dp_attempt_details_lapsed={},
+            accuracy=0,
+            average=0,
+            modules_attempted_count=0,
+            subjects=[],
+            difficulty_map={
+                1: "Beginner",
+                2: "Intermediate",
+                3: "Proficient",
+                4: "Advanced",
+                5: "Expert",
+            },
+            modules=[],
+            all_subjects=[],
+            all_modules=[],
+            custom_attempt_details_completed={},
+            custom_attempt_details_incomplete={},
+            custom_accuracy=0,
+            custom_average=0,
+            custom_modules_attempted_count=0,
+            custom_subjects=[],
+            custom_modules=[]
+        )
     else: 
         # Default to the first student
         student_id = request.form.get('student_id') if request.method == 'POST' else students[0][0]   
@@ -6462,7 +6491,7 @@ def importQuestions():
     except Exception as e:
         # print("Import error:", e)
         db.session.rollback()
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({'success': False, 'message': f'Error at row {index + 2}: str(e)'})
 
 @application.route('/exportQuestions')
 def exportQuestions():
@@ -7580,7 +7609,7 @@ def deleteExam():
 
 # endregion
 
-# region MockExam
+# region AdminMockExam
 
 @application.route('/AdminMockExamList')
 def adminMockExamList():
