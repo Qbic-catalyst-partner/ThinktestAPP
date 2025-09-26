@@ -49,6 +49,11 @@
 
     <p class="pt-4">
       {{ solution.question_description }}
+      {% if solution.choice_type == 'image' and solution.question_image %}
+        <div class="mb-4 w-full sm:w-11/12 max-w-full sm:max-w-[90%] mx-auto flex justify-center">
+          <img src="{{ solution.question_image}}" class="w-auto h-32 rounded shadow border border-gray-300" />
+        </div>
+      {% endif %}
     </p>
   </div>
 
@@ -59,21 +64,6 @@
       {{ solution.solution_explanation }}
     </p>
   </div>
-
-  <!-- <div class="flex-col pt-4 text-base">
-    {% for option, answer in solution.answer_options.items() %}
-    <p>
-      {{ option }}. {{ answer }}
-
-      {% if option in solution.correct_option %}
-      <i class="fa-solid fa-check" style="color: green;"></i>
-
-      {% elif option in solution.selected_option %}
-      <i class="fa-solid fa-xmark" style="color: red;"></i>
-      {% endif %}
-    </p>
-    {% endfor %}
-  </div> -->
 
   <div class="flex-col pt-4 text-base">
     {% for option, answer in solution.answer_options.items() %}

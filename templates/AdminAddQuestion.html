@@ -61,10 +61,36 @@
 
                 <form id="addForm" class="w-full container">
                     <div class="pt-6 ml-16 lg:mt-0 lg:w-2/3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+                        <!-- Question Type Selector -->
+                        <div class="col-span-1 lg:col-span-2 mb-1">
+                            <label class="block text-sm text-gray-500">Choices</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="text" class="form-radio"
+                                        onclick="toggleChoiceType('text')" checked>
+                                    <span class="ml-2">Text</span>
+                                </label>
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="image" class="form-radio"
+                                        onclick="toggleChoiceType('image')">
+                                    <span class="ml-2">Image</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="col-span-1 lg:col-span-2">
-                            <p class="block text-sm text-gray-500 mb-1">Question Name</p>
+                            <p class="block text-sm text-gray-500 mb-1">Question Description</p>
                             <textarea type="text" id="name" placeholder="Enter Question Name"
                                 class="shadow border-0 rounded-md text-sm w-full"></textarea>
+                        </div>
+
+                        <!-- Image Upload Question -->
+                        <div id="image-question" class="col-span-2 hidden">
+                            <label class="block text-sm text-gray-500 mb-1">Question Image URL</label>
+                            <input type="text" id="image_question"
+                                placeholder="Blob URL for question image"
+                                class="shadow border-0 p-2 rounded-md w-80 h-10 text-sm"/>
                         </div>
 
                         <!-- Subject -->
@@ -117,22 +143,6 @@
                                 </option>
                                 {% endfor %}
                             </select>
-                        </div>
-
-                        <div class="col-span-1 lg:col-span-2">
-                            <label class="block text-sm text-gray-500 mb-1">Choices</label>
-                            <div class="flex items-center space-x-6">
-                                <label class="inline-flex items-center text-gray-500">
-                                    <input type="radio" name="choice_type" value="text" class="form-radio"
-                                        onclick="toggleChoiceType('text')" checked>
-                                    <span class="ml-2">Text</span>
-                                </label>
-                                <label class="inline-flex items-center text-gray-500">
-                                    <input type="radio" name="choice_type" value="image" class="form-radio"
-                                        onclick="toggleChoiceType('image')">
-                                    <span class="ml-2">Image</span>
-                                </label>
-                            </div>
                         </div>
 
                         <!-- Text Input Choices -->
@@ -212,10 +222,12 @@
         function toggleChoiceType(type) {
             const textBlock = document.getElementById('text-choices');
             const imageBlock = document.getElementById('image-choices');
+            const questionImageBlock = document.getElementById('image-question');
 
             if (type === 'text') {
                 textBlock.classList.remove('hidden');
                 imageBlock.classList.add('hidden');
+                questionImageBlock.classList.add('hidden');
 
                 // Set required for text inputs
                 for (let i = 1; i <= 4; i++) {
@@ -226,6 +238,7 @@
             } else {
                 textBlock.classList.add('hidden');
                 imageBlock.classList.remove('hidden');
+                questionImageBlock.classList.remove('hidden');
 
                 // Set required for image inputs
                 for (let i = 1; i <= 4; i++) {
@@ -261,22 +274,6 @@
             formData.append('subject', document.getElementById('subject-select').value);
             formData.append('module', document.getElementById('module-select').value);
 
-            // // Build answer_options
-            // const answerOptions = {
-            //     "A": document.getElementById('choice1').value,
-            //     "B": document.getElementById('choice2').value,
-            //     "C": document.getElementById('choice3').value,
-            //     "D": document.getElementById('choice4').value
-            // };
-            // formData.append('answer_options', JSON.stringify(answerOptions));
-
-            // // Correct Options
-            // const selectedOptions = [];
-            // if (document.getElementById('correct1').checked) selectedOptions.push('A');
-            // if (document.getElementById('correct2').checked) selectedOptions.push('B');
-            // if (document.getElementById('correct3').checked) selectedOptions.push('C');
-            // if (document.getElementById('correct4').checked) selectedOptions.push('D');
-
             // Determine type: 'text' or 'image'
             const choiceType = document.querySelector('input[name="choice_type"]:checked').value;
             formData.append('type', choiceType);  // append type field
@@ -300,6 +297,15 @@
             }
 
             formData.append('answer_options', JSON.stringify(answerOptions));
+
+            if (choiceType === 'image') {
+                const imgInput = document.getElementById('image_question');
+                if (imgInput && imgInput.value.trim() !== "") {
+                    formData.append('question_image', imgInput.value.trim());
+                } else {
+                    formData.append('question_image', "None");
+                }
+            }
 
             // Save multi_select
             formData.append('multi_select', selectedOptions.length > 1);

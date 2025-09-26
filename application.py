@@ -94,6 +94,11 @@ class Student(db.Model):
     institution_id = db.Column(db.Integer, db.ForeignKey('registration.Institution.institution_id', ondelete='SET NULL'), nullable=True)
     enrolment_date = db.Column(db.Date, nullable=False)
 
+    # Relationships
+    # subscriptions = db.relationship('Subscription', backref='student', passive_deletes=True)
+    # Relationship to the last_subscription if needed:
+    # last_sub = db.relationship('Subscription', foreign_keys=[last_subscription], post_update=True)
+
 class Subscription(db.Model):
     __tablename__ = 'subscription'
     __table_args__ = {'schema': 'registration'}
@@ -105,6 +110,9 @@ class Subscription(db.Model):
     end_date = db.Column(db.Date, nullable=False)
     plan_id = db.Column(db.Integer, db.ForeignKey('paymentplans.paymentplandetails.plan_id', ondelete='SET NULL'), nullable=True)
 
+    # Relationships
+    # plan = db.relationship('PaymentPlanDetail', backref='subscriptions')
+
 class PaymentPlanDetail(db.Model):
     __tablename__ = 'paymentplandetails'
     __table_args__ = {'schema': 'paymentplans'}
@@ -113,6 +121,9 @@ class PaymentPlanDetail(db.Model):
     plan_name = db.Column(db.String(50), nullable=False)
     duration = db.Column(db.Interval, nullable=False)
     cost = db.Column(db.Numeric(10, 2), nullable=False)
+
+    # Define relationships
+    # subscriptions = db.relationship('Subscription', backref='plan')
 
 class InstitutionLogin(db.Model):
     __tablename__ = 'InstitutionLogin'
@@ -153,7 +164,13 @@ class InstitutionSubscription(db.Model):
 
     subscription_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     institution_id = db.Column(db.Integer, db.ForeignKey('registration.Institution.institution_id'), nullable=False)
-    status = db.Column(db.Boolean, nullable=False, default=True)
+    status = db.Column(db.Boolean, nullable=False, default=True)  # True = Active, False = Inactive
+    # start_date = db.Column(db.Date, nullable=False)
+    # end_date = db.Column(db.Date, nullable=False)
+    # plan_id = db.Column(db.Integer, db.ForeignKey('paymentplans.paymentplandetails.plan_id'), nullable=False)
+
+    # # Relationship
+    # plan = db.relationship('PaymentPlanDetail', backref='institution_subscriptions', lazy=True)
 
 class Direction(db.Model):
     __tablename__ = 'direction'
@@ -178,6 +195,7 @@ class Module(db.Model):
 
     module_id = db.Column(db.Integer, Sequence('module_module_id_seq', schema='meta'), primary_key=True, autoincrement=True)
     module_name = db.Column(VARCHAR(100), nullable=False)
+    # subject_id = db.Column(db.Integer, db.ForeignKey('meta.subject.subject_id'), nullable=False)
 
 class SubjectModuleMapping(db.Model):
     __tablename__ = 'subject_module_mapping'
@@ -199,6 +217,7 @@ class Question(db.Model):
     subject_id = db.Column(db.Integer, db.ForeignKey('meta.subject.subject_id'), nullable=False)
     direction_id = db.Column(db.Integer, db.ForeignKey('meta.direction.direction_id'), nullable=False)
     question_description = db.Column(db.Text, nullable=False)
+    question_image = db.Column(db.Text, nullable=True)
     answer_options = db.Column(JSONB, nullable=False)
     choice_type = db.Column(ENUM('text', 'image', name='choice_type_enum', schema='meta'), nullable=True)
     max_score = db.Column(db.Integer, nullable=False)
@@ -585,7 +604,6 @@ def sendMobileOTP():
 
     # Check if phone number is registered
     response = check_phone_internal(phoneNumber)
-    # print(response)
     if not response['success']:
         return jsonify({'status': 'phone_registered'}), 400
 
@@ -594,7 +612,6 @@ def sendMobileOTP():
         response = requests.get(url)
         return jsonify({'status': 'success'})
     except Exception as e:
-        # print(f"An error occurred: {e}")
         return jsonify({'status': 'failure'})
 
 @application.route('/verifyMobileOTP', methods=['GET' ,'POST'])
@@ -805,7 +822,7 @@ def loginPage():
                         Subscription.end_date.is_(None)
                     ).first()
 
-                if subscription and subscription.status and (subscription.end_date>=today or subscription.end_date==None):
+                if subscription and subscription.status and (subscription.end_date==None or subscription.end_date>=today):
                     session['user_id'] = login.student_id                    
                     verified_emails[email] = True
                     return redirect(url_for('dashboard'))
@@ -1591,6 +1608,19 @@ def get_presigned_image_url(filename):
     except Exception as e:
         print("S3 error:", e.response.get("Error"))
         return None
+    
+def get_presigned_question_image_url(filename):
+    key = f"question_pictures/{filename}"
+    try:
+        s3.head_object(Bucket=BUCKET_NAME, Key=key)
+        return s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': BUCKET_NAME, 'Key': key},
+            ExpiresIn=3600
+        )
+    except Exception as e:
+        print("S3 error:", e.response.get("Error"))
+        return None
 
 @application.route('/MockTestInstruction', methods=['POST'])
 def mockTestInstruction():
@@ -1767,6 +1797,7 @@ def mockTest():
             question.q_id,
             direction.direction_description,
             question.question_description,
+            question.question_image,
             question.answer_options,
             question.choice_type,
             question.max_score,
@@ -1792,6 +1823,7 @@ def mockTest():
                 'q_id': response.q_id,
                 'direction_description': response.direction_description,
                 'question_description': response.question_description,
+                'question_image': response.question_image,
                 'answer_options': response.answer_options,
                 'choice_type' : response.choice_type,
                 'max_score': response.max_score,
@@ -1808,7 +1840,13 @@ def mockTest():
                     signed_url = get_presigned_image_url(v)
                     new_options[k] = signed_url if signed_url else v
                 question_data['answer_options'] = new_options
-        
+
+            question_data['question_image'] = (
+                get_presigned_question_image_url(question_data['question_image'])
+                if question_data.get('question_image')
+                else None
+            )
+            
             questions.append(question_data)
         
         return render_template('MockTest.html', exam_id=exam_id, questions=questions, exam_duration=exam_duration_seconds, attempt_id=attempt_id, resume_seconds=resume_seconds)
@@ -2040,7 +2078,7 @@ def get_report_table_details(responses):
 
 def get_report_qa_details(attempt_id,subject='all',response_type='all'):
     base_query = """
-    SELECT q_order,response,selected_option, correct_option, question_description, solution_explanation, answer_options , choice_type
+    SELECT q_order,response,selected_option, correct_option, question_description, question_image, solution_explanation, answer_options , choice_type
     FROM mocktest.userresponse
     JOIN meta.question ON mocktest.userresponse.q_id = meta.question.q_id
     JOIN meta.subject ON meta.subject.subject_id = meta.question.subject_id
@@ -2057,9 +2095,41 @@ def get_report_qa_details(attempt_id,subject='all',response_type='all'):
         
     base_query+= " order by q_order"
 
-    query= text(base_query)
-    solutions = db.session.execute(query, params).fetchall()
-    return solutions
+    result = db.session.execute(text(base_query), params)
+    rows = [dict(r._mapping) for r in result]
+
+    processed = []
+    for r in rows:
+        # Sign main question image (if any)
+        img = r.get("question_image")
+        r["question_image"] = get_presigned_question_image_url(img) if img else None
+
+        # If image-type question, sign each option value (assuming values are image keys/URLs)
+        if r.get("choice_type") == "image":
+            opts = r.get("answer_options")
+            if isinstance(opts, str):
+                try:
+                    opts = json.loads(opts)
+                except Exception:
+                    opts = {}
+            opts = opts or {}
+            signed_opts = {}
+            for k, v in opts.items():
+                signed = get_presigned_image_url(v) if v else None
+                signed_opts[k] = signed or v
+            r["answer_options"] = signed_opts
+        else:
+            # For non-image questions, ensure answer_options is a dict if it was JSON text
+            opts = r.get("answer_options")
+            if isinstance(opts, str):
+                try:
+                    r["answer_options"] = json.loads(opts)
+                except Exception:
+                    pass
+
+        processed.append(r)
+
+    return processed
 
 @application.route('/Report', methods=['POST'])
 def generateReport():
@@ -2077,26 +2147,7 @@ def generateReport():
     exam_name = MockExam.query.filter_by(exam_id = exam_id).first().exam_name
     responses = get_report_responses(attempt_id)
     subjects, all_sections= get_report_table_details(responses)
-    solutions_raw  = get_report_qa_details(attempt_id)
-    
-    # Convert to dicts for mutation
-    solutions = [dict(row._mapping) for row in solutions_raw]
-
-    # Replace image filenames with presigned URLs if choice_type is image
-    for solution in solutions:
-        if solution.get("choice_type") == "image":
-            new_options = {}
-            for key, val in solution["answer_options"].items():
-                signed_url = get_presigned_image_url(val)
-                new_options[key] = signed_url if signed_url else val
-            solution["answer_options"] = new_options
-
-        else:
-            # For text options, still load as JSON
-            try:
-                solution["answer_options"] = json.loads(solution["answer_options"])
-            except:
-                pass
+    solutions  = get_report_qa_details(attempt_id)
             
     return render_template('Report.html',
                            subjects=subjects,all_sections=all_sections,
@@ -2109,27 +2160,7 @@ def filter_report():
     total_questions = request.form.get('total_questions')
     selected_subject = request.form.get('subjects')
     selected_responsetype = request.form.get('responsetype')
-    solutions_raw  = get_report_qa_details(attempt_id,subject=selected_subject,response_type=selected_responsetype)
-    
-    # Convert to dicts for mutation
-    solutions = [dict(row._mapping) for row in solutions_raw]
-
-    # Replace image filenames with presigned URLs if choice_type is image
-    for solution in solutions:
-        if solution.get("choice_type") == "image":
-            options = json.loads(solution["answer_options"])
-            new_options = {}
-            for key, val in options.items():
-                signed_url = get_presigned_image_url(val)
-                new_options[key] = signed_url if signed_url else val
-            solution["answer_options"] = new_options
-
-        else:
-            # For text options, still load as JSON
-            try:
-                solution["answer_options"] = json.loads(solution["answer_options"])
-            except:
-                pass
+    solutions  = get_report_qa_details(attempt_id,subject=selected_subject,response_type=selected_responsetype)
 
     return render_template('ReportSolution.html',
                            solutions = solutions, total_questions = total_questions)
@@ -2216,13 +2247,7 @@ def getAllSubjects():
     getSubjectQuery = text("""select * from meta.subject""")
     all_subjects = db.session.execute(getSubjectQuery).fetchall()
     all_subject_list = [{'subject_id':row.subject_id, 'subject_name': row.subject_name} for row in all_subjects]
-    return all_subject_list
-    
-# def getAllModules():
-#     getModuleQuery = text("""select * from meta.module""")
-#     all_modules = db.session.execute(getModuleQuery).fetchall()
-#     all_module_list = [{"module_id": row.module_id, "module_name": row.module_name, "subject_id":row.subject_id} for row in all_modules]
-#     return all_module_list
+    return all_subject_list    
 
 def getAllModules():
     result = db.session.query(
@@ -2689,6 +2714,7 @@ def customModuleTest():
             question.q_id,
             direction.direction_description,
             question.question_description,
+            question.question_image,
             question.answer_options,
             question.max_score,
             question.correct_option,
@@ -2714,6 +2740,7 @@ def customModuleTest():
             'q_id': response.q_id,
             'direction_description': response.direction_description,
             'question_description': response.question_description,
+            'question_image': response.question_image,
             'answer_options': response.answer_options,
             'choice_type' : response.choice_type,
             'max_score': response.max_score,
@@ -2730,6 +2757,12 @@ def customModuleTest():
                 signed_url = get_presigned_image_url(v)
                 new_options[k] = signed_url if signed_url else v
             question_data['answer_options'] = new_options
+            
+        question_data['question_image'] = (
+                get_presigned_question_image_url(question_data['question_image'])
+                if question_data.get('question_image')
+                else None
+            )
         
         questions.append(question_data)
 
@@ -2926,7 +2959,7 @@ def cm_get_report_table_details(responses):
 
 def cm_get_report_qa_details(attempt_id,subject='all',module='all',response_type='all'):
     base_query = """
-    SELECT q_order,response,selected_option, correct_option, question_description, solution_explanation, answer_options , choice_type
+    SELECT q_order,response,selected_option, correct_option, question_description, question_image, solution_explanation, answer_options , choice_type
     FROM custommodules.userresponse
     JOIN meta.question ON custommodules.userresponse.q_id = meta.question.q_id
     JOIN meta.subject ON meta.subject.subject_id = meta.question.subject_id
@@ -2947,9 +2980,41 @@ def cm_get_report_qa_details(attempt_id,subject='all',module='all',response_type
         
     base_query+= " order by q_order"
 
-    query= text(base_query)
-    solutions = db.session.execute(query, params).fetchall()
-    return solutions
+    result = db.session.execute(text(base_query), params)
+    rows = [dict(r._mapping) for r in result]
+
+    processed = []
+    for r in rows:
+        # Sign main question image (if any)
+        img = r.get("question_image")
+        r["question_image"] = get_presigned_question_image_url(img) if img else None
+
+        # If image-type question, sign each option value (assuming values are image keys/URLs)
+        if r.get("choice_type") == "image":
+            opts = r.get("answer_options")
+            if isinstance(opts, str):
+                try:
+                    opts = json.loads(opts)
+                except Exception:
+                    opts = {}
+            opts = opts or {}
+            signed_opts = {}
+            for k, v in opts.items():
+                signed = get_presigned_image_url(v) if v else None
+                signed_opts[k] = signed or v
+            r["answer_options"] = signed_opts
+        else:
+            # For non-image questions, ensure answer_options is a dict if it was JSON text
+            opts = r.get("answer_options")
+            if isinstance(opts, str):
+                try:
+                    r["answer_options"] = json.loads(opts)
+                except Exception:
+                    pass
+
+        processed.append(r)
+
+    return processed
 
 @application.route('/CustomModuleReport', methods=['POST'])
 def cmGenerateReport():
@@ -3411,12 +3476,6 @@ def dc_fetch_attempts():
     from_date = request.args.get('from_date')
     to_date = request.args.get('to_date')
 
-    # Ensure dates are in the correct format
-    # if from_date:
-    #     from_date = datetime.strptime(from_date, "%Y-%m-%d").date()
-    # if to_date:
-    #     to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
-
     # Call `filter_dp_logic` with extracted dates
     tests_completed, incomplete_tests, lapsed_tests = filter_dp_logic(
         student_id, 'all', 'all', from_date, to_date, 'all'
@@ -3603,6 +3662,7 @@ def dailyPracticeTest():
             question.q_id,
             direction.direction_description,
             question.question_description,
+            question.question_image,
             question.answer_options,
             question.max_score,
             question.correct_option,
@@ -3628,6 +3688,7 @@ def dailyPracticeTest():
             'q_id': response.q_id,
             'direction_description': response.direction_description,
             'question_description': response.question_description,
+            'question_image': response.question_image,
             'answer_options': response.answer_options,
             'choice_type' : response.choice_type,
             'max_score': response.max_score,
@@ -3644,6 +3705,12 @@ def dailyPracticeTest():
                 signed_url = get_presigned_image_url(v)
                 new_options[k] = signed_url if signed_url else v
             question_data['answer_options'] = new_options
+            
+        question_data['question_image'] = (
+                get_presigned_question_image_url(question_data['question_image'])
+                if question_data.get('question_image')
+                else None
+            )
         
         questions.append(question_data)
 
@@ -3840,7 +3907,7 @@ def dp_get_report_table_details(responses):
 
 def dp_get_report_qa_details(attempt_id,subject='all',module='all',response_type='all'):
     base_query = """
-    SELECT q_order,response,selected_option, correct_option, question_description, solution_explanation, answer_options, choice_type 
+    SELECT q_order,response,selected_option, correct_option, question_description, question_image, solution_explanation, answer_options, choice_type 
     FROM dailypractice.userresponse
     JOIN meta.question ON dailypractice.userresponse.q_id = meta.question.q_id
     JOIN meta.subject ON meta.subject.subject_id = meta.question.subject_id
@@ -3860,10 +3927,42 @@ def dp_get_report_qa_details(attempt_id,subject='all',module='all',response_type
         params.update({"response_type": response_type})
         
     base_query+= " order by q_order"
+    
+    result = db.session.execute(text(base_query), params)
+    rows = [dict(r._mapping) for r in result]
 
-    query= text(base_query)
-    solutions = db.session.execute(query, params).fetchall()
-    return solutions
+    processed = []
+    for r in rows:
+        # Sign main question image (if any)
+        img = r.get("question_image")
+        r["question_image"] = get_presigned_question_image_url(img) if img else None
+
+        # If image-type question, sign each option value (assuming values are image keys/URLs)
+        if r.get("choice_type") == "image":
+            opts = r.get("answer_options")
+            if isinstance(opts, str):
+                try:
+                    opts = json.loads(opts)
+                except Exception:
+                    opts = {}
+            opts = opts or {}
+            signed_opts = {}
+            for k, v in opts.items():
+                signed = get_presigned_image_url(v) if v else None
+                signed_opts[k] = signed or v
+            r["answer_options"] = signed_opts
+        else:
+            # For non-image questions, ensure answer_options is a dict if it was JSON text
+            opts = r.get("answer_options")
+            if isinstance(opts, str):
+                try:
+                    r["answer_options"] = json.loads(opts)
+                except Exception:
+                    pass
+
+        processed.append(r)
+
+    return processed
 
 @application.route('/DailyPracticeReport', methods=['POST'])
 def dpGenerateReport():
@@ -3890,8 +3989,6 @@ def dp_filter_report():
     selected_subject = request.form.get('subjects')
     selected_module = request.form.get('modules')
     selected_responsetype = request.form.get('responsetype')
-    # print(selected_subject)
-    # print(selected_responsetype)
     filtered_solutions = dp_get_report_qa_details(attempt_id,subject=selected_subject,module=selected_module,response_type=selected_responsetype)
 
     return render_template('ReportSolution.html',
@@ -6253,11 +6350,15 @@ def adminAddQuestion():
             module_id = request.form.get('module')
             direction_id = request.form.get('direction')
             difficulty_level = request.form.get('difficulty')
-            answer_options = request.form.get('answer_options')  # JSON string
+            answer_options = request.form.get('answer_options')
             choice_type = request.form.get('type')
             multi_select = request.form.get('multi_select') == 'true'
-            correct_option = request.form.get('correct_option')  # Already formatted like "{A,C}"
+            correct_option = request.form.get('correct_option')
             solution = request.form.get('solution')
+            question_image = None
+            
+            if choice_type == "image":                
+                question_image = request.form.get('question_image')
 
             # Validate required fields
             if not (name and subject_id and direction_id and answer_options and correct_option):
@@ -6274,10 +6375,11 @@ def adminAddQuestion():
                 module_id=int(module_id) if module_id else None,
                 direction_id=int(direction_id),
                 question_description=name,
-                answer_options=answer_options,  # JSON format string
+                question_image = question_image,
+                answer_options=answer_options,
                 choice_type=choice_type,
-                correct_option=[correct_option],  # PostgreSQL ARRAY(Text) expects list
-                max_score=1,  # Assuming 1 mark per question
+                correct_option=[correct_option],
+                max_score=1,  # Assumption: 1 mark per question
                 solution_explanation=solution,
                 multi_select=multi_select,
                 difficulty_level=int(difficulty_level) if difficulty_level else 1
@@ -6331,6 +6433,10 @@ def adminEditQuestion():
         question.difficulty_level = int(data.get('difficulty')) if data.get('difficulty') else 1
         question.solution_explanation = data.get('solution')
         question.choice_type = data.get('type')
+        question.question_image = None
+            
+        if question.choice_type == "image":                
+            question.question_image = request.form.get('question_image')
 
         # Update answer options
         answer_options_raw = data.get('answer_options')
@@ -6429,6 +6535,7 @@ def importQuestions():
             difficulty = row.get('Difficulty')
             correct_option = row.get('Correct Option')
             solution_explanation = row.get('Solution Explanation')
+            question_image= None
 
             choice_A = row.get('Choice A')
             choice_B = row.get('Choice B')
@@ -6436,6 +6543,9 @@ def importQuestions():
             choice_D = row.get('Choice D')
             
             choice_type = row.get('Choice Type')  # Expected 'text' or 'image'
+            
+            if(choice_type == "image"):
+                question_image = row.get('Question Image')
 
             if not (q_description and subject_id and module_id and direction_id and difficulty and correct_option):
                 skipped += 1
@@ -6472,6 +6582,7 @@ def importQuestions():
                 subject_id=subject.subject_id,
                 module_id=module.module_id,
                 direction_id=direction.direction_id,
+                question_image=question_image,
                 answer_options=answer_options,
                 choice_type=choice_type if choice_type in ['text', 'image'] else 'text',
                 correct_option=[correct_option],  # store as list
@@ -6498,6 +6609,7 @@ def exportQuestions():
     questions = db.session.query(
         Question.q_id,
         Question.question_description,
+        Question.question_image,
         Question.answer_options,
         Question.choice_type,
         Question.max_score,
@@ -6522,6 +6634,7 @@ def exportQuestions():
         data.append({
             'Question ID': q.q_id,
             'Question Description': q.question_description,
+            'Question Image':q.question_image,
             'Question Answer Options': q.answer_options,
             'Question Choice Type': q.choice_type,
             'Question Max Score': q.max_score,
@@ -7863,7 +7976,7 @@ def import_mock_exams():
         return jsonify({'success': False, 'message': str(e)})
 
 # endregion
-          
+         
 if __name__ == '__main__':
     with application.app_context():
         db.create_all()

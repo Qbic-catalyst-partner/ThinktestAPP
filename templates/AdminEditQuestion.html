@@ -57,11 +57,38 @@
                 <form id="editForm" class="w-full container">
                     <div class="pt-6 ml-16 md:mt-0 md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-4">
 
+                        <!-- Question Type Selector -->
+                        <div class="col-span-2 mb-1">
+                            <label class="block text-sm text-gray-500 mb-1">Question Type</label>
+                            <div class="flex items-center space-x-6">
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="text" class="form-radio"
+                                        onclick="toggleChoiceType('text')" {% if question.choice_type=='text'
+                                        %}checked{% endif %}>
+                                    <span class="ml-2">Text</span>
+                                </label>
+                                <label class="inline-flex items-center text-gray-500">
+                                    <input type="radio" name="choice_type" value="image" class="form-radio"
+                                        onclick="toggleChoiceType('image')" {% if question.choice_type=='image'
+                                        %}checked{% endif %}>
+                                    <span class="ml-2">Image</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Question Description -->
                         <div class="col-span-2">
-                            <p class="block text-sm text-gray-500 mb-1">Question Name</p>
+                            <p class="block text-sm text-gray-500 mb-1">Question Description</p>
                             <input type="text" id="name" value="{{ question.question_description }}"
                                 class="shadow border-0 w-full rounded-md font-normal" required />
+                        </div>
+
+                        <!-- Image Upload Question -->
+                        <div id="image-question" class="col-span-2 hidden">
+                            <label class="block text-sm text-gray-500 mb-1">Question Image URL</label>
+                            <input type="text" id="image_question" name="image_question" value="{{ question.question_image}}"
+                                placeholder="Blob URL for question image"
+                                class="shadow border-0 p-2 rounded-md w-80 h-10 text-sm" required />
                         </div>
 
                         <!-- Subject -->
@@ -123,29 +150,10 @@
                         </div>
 
                         <div class="col-span-2">
-                            <label class="block text-sm text-gray-500 mb-1">Choices</label>
+                            <label class="block text-sm text-gray-500">Choices</label>
                         </div>
 
                         <!-- Choices -->
-
-                        <!-- Choice Type Selector -->
-                        <div class="col-span-2">
-                            <label class="block text-sm text-gray-500 mb-1">Choices</label>
-                            <div class="flex items-center space-x-6">
-                                <label class="inline-flex items-center text-gray-500">
-                                    <input type="radio" name="choice_type" value="text" class="form-radio"
-                                        onclick="toggleChoiceType('text')" {% if question.choice_type=='text'
-                                        %}checked{% endif %}>
-                                    <span class="ml-2">Text</span>
-                                </label>
-                                <label class="inline-flex items-center text-gray-500">
-                                    <input type="radio" name="choice_type" value="image" class="form-radio"
-                                        onclick="toggleChoiceType('image')" {% if question.choice_type=='image'
-                                        %}checked{% endif %}>
-                                    <span class="ml-2">Image</span>
-                                </label>
-                            </div>
-                        </div>
 
                         {% set letters = ['A', 'B', 'C', 'D'] %}
                         <!-- Text Input Choices -->
@@ -260,69 +268,15 @@
             }
         });
 
-        // document.getElementById('editForm').addEventListener('submit', function (e) {
-        //     e.preventDefault();
-
-        //     const correctOptions = [];
-        //     ['1', '2', '3', '4'].forEach((num, index) => {
-        //         const checkbox = document.getElementById('correct' + num);
-        //         if (checkbox && checkbox.checked) {
-        //             const letter = String.fromCharCode(65 + index);
-        //             correctOptions.push(letter);
-        //         }
-        //     });
-
-        //     if (correctOptions.length === 0) {
-        //         alert('Please select at least one correct answer.');
-        //         return;
-        //     }
-
-        //     const formData = new FormData();
-        //     formData.append('q_id', '{{ question.q_id }}');
-        //     formData.append('name', document.getElementById('name').value);
-        //     formData.append('subject', document.getElementById('subject').value);
-        //     formData.append('module', document.getElementById('module').value);
-        //     formData.append('direction', document.getElementById('direction').value);
-        //     formData.append('difficulty', document.getElementById('difficulty').value);
-
-        //     const answerOptions = {
-        //         "A": document.getElementById('choice1').value,
-        //         "B": document.getElementById('choice2').value,
-        //         "C": document.getElementById('choice3').value,
-        //         "D": document.getElementById('choice4').value
-        //     };
-        //     formData.append('answer_options', JSON.stringify(answerOptions));
-
-        //     formData.append('correct_option', `{${correctOptions.join(',')}}`);
-
-        //     formData.append('solution', document.getElementById('solution').value);
-
-        //     fetch('/adminEditQuestion', {
-        //         method: 'POST',
-        //         body: formData
-        //     })
-        //         .then(res => res.json())
-        //         .then(res => {
-        //             if (res.success) {
-        //                 alert('Question updated successfully.');
-        //                 window.location.href = '/AdminQuestionList';
-        //             } else {
-        //                 alert(res.message || 'Failed to update question');
-        //             }
-        //         })
-        //         .catch(err => {
-        //             // console.error(err);
-        //             alert('Error occurred while updating question');
-        //         });
-        // });
-
         function toggleChoiceType(type) {
             const textBlock = document.getElementById('text-choices');
             const imageBlock = document.getElementById('image-choices');
+            const questionImageBlock = document.getElementById('image-question');
 
             if (type === 'text') {
                 textBlock.classList.remove('hidden');
                 imageBlock.classList.add('hidden');
+                questionImageBlock.classList.add('hidden');
 
                 // Set required for text inputs
                 for (let i = 1; i <= 4; i++) {
@@ -334,6 +288,7 @@
             } else {
                 textBlock.classList.add('hidden');
                 imageBlock.classList.remove('hidden');
+                questionImageBlock.classList.remove('hidden');
 
                 // Set required for image inputs
                 for (let i = 1; i <= 4; i++) {
@@ -347,7 +302,6 @@
 
         document.getElementById('editForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            // console.log("✅ Submit triggered");
 
             const formData = new FormData();
             formData.append('q_id', '{{ question.q_id }}');
@@ -364,6 +318,13 @@
                 return;
             }
             formData.append('type', choiceType);
+
+            const imgInput = document.getElementById('image_question');
+            if (imgInput && imgInput.value.trim() !== "") {
+                formData.append('question_image', imgInput.value.trim());
+            } else {
+                formData.append('question_image', "None");
+            }
 
             const answerOptions = {};
             const selectedOptions = [];
